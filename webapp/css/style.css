@@ -1,0 +1,63 @@
+/* Enter your custom styles here */
+
+html[dir="ltr"] .knowledgeBaseApp .richtextWarning .tox .tox-edit-area__iframe {
+    background: 0 100% / 100% 0.125rem no-repeat linear-gradient(0deg, #f53232, #f53232) border-box;
+    background-color: #ffeaf4;
+}
+
+html[dir="rtl"] .knowledgeBaseApp .richtextWarning .tox .tox-edit-area__iframe  {
+    background: 0 100% / 100% 0.125rem no-repeat linear-gradient(0deg, #f53232, #f53232) border-box;
+    background-color: #ffeaf4;
+}
+
+html[dir="ltr"] .knowledgeBaseApp .richtextWarning .tox .tox-edit-area__iframe:hover {
+    background: 0 100% / 100% 0.125rem no-repeat linear-gradient(0deg, #f53232, #f53232) border-box;
+    background-color: white;
+    border: 0.1px solid #f532324f;
+    border-radius: 5px;
+}
+
+html[dir="rtl"] .knowledgeBaseApp .richtextWarning .tox .tox-edit-area__iframe  {
+    background: 0 100% / 100% 0.125rem no-repeat linear-gradient(0deg, #f53232, #f53232) border-box;
+    background-color: white;
+    border: 0.1px solid #f532324f;
+    border-radius: 5px;
+}
+
+html[dir="ltr"] .knowledgeBaseApp .sapUiRTE.sapUiRTEWithCustomToolbar .sapUiRteEditorContainer {
+    border: none !important;
+}
+
+html[dir="rtl"] .knowledgeBaseApp .sapUiRTE.sapUiRTEWithCustomToolbar .sapUiRteEditorContainer {
+    border: none !important;
+}
+
+/* html[dir="rtl"] .sapUxAPObjectPageScroll {
+  width:90%;
+  margin-left: 5%;
+}
+
+html[dir="ltr"] .sapUxAPObjectPageScroll {
+    width:90%;
+    margin-left: 5%;
+}
+
+html[dir="rtl"] .sapUxAPBlockContainer {
+    padding-top: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+html[dir="ltr"] .sapUxAPBlockContainer {
+    padding-top: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+html[dir="rtl"] .sapUxAPObjectPageSubSectionHeader {
+    padding: 0;
+}
+
+html[dir="ltr"] .sapUxAPObjectPageSubSectionHeader {
+    padding: 0;
+} */

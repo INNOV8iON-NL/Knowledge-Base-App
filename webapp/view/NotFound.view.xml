@@ -1,0 +1,25 @@
+<mvc:View xmlns:layout="sap.ui.layout"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns="sap.m"
+	xmlns:f="sap.f"
+	xmlns:card="sap.f.cards"
+	height="100%"
+	controllerName="articlesfreestyle.controller.NotFound"
+	>
+    <Page class="sapUiResponsiveContentPadding"  >
+<VBox  height='100%' justifyContent ='Center' alignItems="Center" > 
+	<f:Card width="300px" >
+		<f:header>
+			<card:Header title="Not found"  />
+		</f:header>
+		<f:content>
+			<IllustratedMessage 
+            enableVerticalResponsiveness="true"
+            illustrationType="sapIllus-PageNotFound">
+			</IllustratedMessage>
+		</f:content>
+	</f:Card>
+</VBox>
+    </Page>
+</mvc:View>
+

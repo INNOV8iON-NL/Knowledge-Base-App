@@ -1,0 +1,697 @@
+<mvc:View
+    xmlns:forms="sap.ui.layout.form"
+    xmlns:smartmultiedit="sap.ui.comp.smartmultiedit"
+    xmlns="sap.m"
+    xmlns:uxap="sap.uxap"
+    xmlns:layout="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+    xmlns:editor="sap.ui.codeeditor"
+    controllerName="articlesfreestyle.controller.Articles"
+    xmlns:rte="sap.ui.richtexteditor"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:u="sap.ui.unified"
+    xmlns:f="sap.ui.layout.form"
+    displayBlock="true"
+    height="100%"
+    width="100%"
+>
+    <uxap:ObjectPageLayout
+        id="ObjectPageLayout1"
+        enableLazyLoading="true"
+        useIconTabBar="true"
+    >
+        <uxap:headerTitle>
+            <uxap:ObjectPageDynamicHeaderTitle areaShrinkRatio="1:5:5">
+                <uxap:expandedHeading>
+                    <Title
+                        text="{Title}"
+                        id="titleText"
+                    />
+                </uxap:expandedHeading>
+
+                <uxap:snappedHeading>
+                    <Title text="{Title}" />
+                </uxap:snappedHeading>
+
+                <uxap:actions>
+                    <Button
+                        text="Edit"
+                        type="Emphasized"
+                        press=".onEdit"
+                        visible="true"
+                        id="editButton"
+                    />
+                    <Button
+                        text="Save"
+                        type="Emphasized"
+                        press=".onSaveChanges"
+                        visible="false"
+                        id="saveButton"
+                    />
+                    <Button
+                        text="Cancel"
+                        type="Default"
+                        press=".onCancel"
+                        visible="false"
+                        id="cancelButton"
+                    />
+                </uxap:actions>
+            </uxap:ObjectPageDynamicHeaderTitle>
+        </uxap:headerTitle>
+
+        <uxap:headerContent>
+            <HeaderContainer>
+                <VBox
+                    class="sapUiSmallMarginEnd sapUiSmallMarginBottom"
+                    width="300px"
+                >
+                    <HBox class="sapUiTinyMarginBottom">
+                        <Label
+                            text="Created by:"
+                            class="sapUiSmallMarginEnd"
+                        />
+                        <Text text="{CreatedBy}" />
+                    </HBox>
+
+                    <HBox class="sapUiTinyMarginBottom">
+                        <Label
+                            text="Changed on:"
+                            class="sapUiSmallMarginEnd"
+                        />
+                        <Text
+                            text="{
+                                path: 'LocalLastChangedAt',
+                                type: 'sap.ui.model.type.DateTime',
+                                formatOptions: {
+                                    style: 'medium'
+                                }
+                                }"
+                        />
+                    </HBox>
+
+                    <HBox
+                        class="sapUiTinyMarginBottom"
+                        alignItems="Center"
+                        id="titleContainer"
+                        visible="false"
+                    >
+                        <Label
+                            text="New title:"
+                            class="sapUiSmallMarginEnd"
+                        />
+                        <Input
+                            value="{Title}"
+                            width="250px"
+                            editable="true"
+                            id="titleValue"
+                        />
+                    </HBox>
+                </VBox>
+
+                <VBox
+                    class="sapUiSmallMarginEnd sapUiSmallMarginBottom"
+                    width="500px"
+                >
+                    <Title
+                        text="Description"
+                        class="sapUiTinyMarginBottom"
+                    />
+                    <Text
+                        text="{Description}"
+                        visible="true"
+                        id="descText"
+                    />
+                    <TextArea
+                        value="{Description}"
+                        rows="10"
+                        width="100%"
+                        visible="false"
+                        editable="true"
+                        id="descValue"
+                        maxLength="1000"
+                        showExceededText="true"
+                    />
+                </VBox>
+                <VBox>
+                    <Title
+                        text="Category"
+                        class="sapUiTinyMarginBottom"
+                    />
+                    <List items="{to_tags}">
+                        <DisplayListItem value="{TagName}" />
+                    </List>
+                </VBox>
+            </HeaderContainer>
+        </uxap:headerContent>
+
+        <uxap:sections>
+            <uxap:ObjectPageSection
+                titleUppercase="false"
+                title="Article"
+            >
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection>
+                        <rte:RichTextEditor
+                            id="richTextId"
+                            class="sapUiSmallMarginTop mceContentBody"
+                            editorType="TinyMCE6"
+                            customToolbar="true"
+                            showGroupClipboard="false"
+                            showGroupTextAlign="false"
+                            showGroupStructure="false"
+                            showGroupLink="false"
+                            showGroupFont="false"
+                            showGroupFontStyle="false"
+                            showGroupInsert="false"
+                            editable="false"
+                            height="500px"
+                            width="100%"
+                            value="{Content}"
+                        />
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+            <uxap:ObjectPageSection
+                titleUppercase="false"
+                title="Code"
+            />
+
+            <uxap:ObjectPageSection title="Code">
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection title="Programming language">
+                        <VBox>
+                            <ComboBox
+                                id="articleCombobox"
+                                change=".selectChange"
+                                value="{CodeType}"
+                            >
+                                <core:Item text="abap" />
+                                <core:Item text="abc" />
+                                <core:Item text="actionscript" />
+                                <core:Item text="ada" />
+                                <core:Item text="apache_conf" />
+                                <core:Item text="applescript" />
+                                <core:Item text="asciidoc" />
+                                <core:Item text="assembly_x86" />
+                                <core:Item text="autohotkey" />
+                                <core:Item text="batchfile" />
+                                <core:Item text="bro" />
+                                <core:Item text="c9search" />
+                                <core:Item text="c_cpp" />
+                                <core:Item text="cirru" />
+                                <core:Item text="clojure" />
+                                <core:Item text="cobol" />
+                                <core:Item text="coffee" />
+                                <core:Item text="coldfusion" />
+                                <core:Item text="csharp" />
+                                <core:Item text="css" />
+                                <core:Item text="csp" />
+                                <core:Item text="cssound_score" />
+                                <core:Item text="cssound_orchestra" />
+                                <core:Item text="cssound_document" />
+                                <core:Item text="curly" />
+                                <core:Item text="d" />
+                                <core:Item text="dart" />
+                                <core:Item text="diff" />
+                                <core:Item text="django" />
+                                <core:Item text="dockerfile" />
+                                <core:Item text="dot" />
+                                <core:Item text="drools" />
+                                <core:Item text="edifact" />
+                                <core:Item text="eiffel" />
+                                <core:Item text="ejs" />
+                                <core:Item text="elixir" />
+                                <core:Item text="elm" />
+                                <core:Item text="erlang" />
+                                <core:Item text="forth" />
+                                <core:Item text="fortran" />
+                                <core:Item text="ftl" />
+                                <core:Item text="fsharp" />
+                                <core:Item text="gcode" />
+                                <core:Item text="gherkin" />
+                                <core:Item text="gitignore" />
+                                <core:Item text="glsl" />
+                                <core:Item text="gobstones" />
+                                <core:Item text="golang" />
+                                <core:Item text="groovy" />
+                                <core:Item text="haml" />
+                                <core:Item text="handlebars" />
+                                <core:Item text="haskell" />
+                                <core:Item text="haskell_cabal" />
+                                <core:Item text="haxe" />
+                                <core:Item text="hjson" />
+                                <core:Item text="html" />
+                                <core:Item text="html_elixir" />
+                                <core:Item text="html_ruby" />
+                                <core:Item text="ini" />
+                                <core:Item text="io" />
+                                <core:Item text="jack" />
+                                <core:Item text="jade" />
+                                <core:Item text="java" />
+                                <core:Item text="javascript" />
+                                <core:Item text="json" />
+                                <core:Item text="jsoniq" />
+                                <core:Item text="jsp" />
+                                <core:Item text="jssm" />
+                                <core:Item text="jsx" />
+                                <core:Item text="julia" />
+                                <core:Item text="kotlin" />
+                                <core:Item text="latex" />
+                                <core:Item text="lean" />
+                                <core:Item text="less" />
+                                <core:Item text="liquid" />
+                                <core:Item text="lisp" />
+                                <core:Item text="live_script" />
+                                <core:Item text="livescript" />
+                                <core:Item text="logiql" />
+                                <core:Item text="lsl" />
+                                <core:Item text="lua" />
+                                <core:Item text="luapage" />
+                                <core:Item text="lucene" />
+                                <core:Item text="makefile" />
+                                <core:Item text="markdown" />
+                                <core:Item text="mask" />
+                                <core:Item text="matlab" />
+                                <core:Item text="mavens_mate_log" />
+                                <core:Item text="maze" />
+                                <core:Item text="mel" />
+                                <core:Item text="mips_assembler" />
+                                <core:Item text="mipsassembler" />
+                                <core:Item text="mixal" />
+                                <core:Item text="mushcode" />
+                                <core:Item text="mysql" />
+                                <core:Item text="nix" />
+                                <core:Item text="nsis" />
+                                <core:Item text="objectivec" />
+                                <core:Item text="ocaml" />
+                                <core:Item text="pascal" />
+                                <core:Item text="perl" />
+                                <core:Item text="pgsql" />
+                                <core:Item text="php" />
+                                <core:Item text="plain_text" />
+                                <core:Item text="powershell" />
+                                <core:Item text="praat" />
+                                <core:Item text="prolog" />
+                                <core:Item text="properties" />
+                                <core:Item text="protobuf" />
+                                <core:Item text="python" />
+                                <core:Item text="r" />
+                                <core:Item text="razor" />
+                                <core:Item text="rdoc" />
+                                <core:Item text="rhtml" />
+                                <core:Item text="rst" />
+                                <core:Item text="ruby" />
+                                <core:Item text="rust" />
+                                <core:Item text="sass" />
+                                <core:Item text="scad" />
+                                <core:Item text="scala" />
+                                <core:Item text="scheme" />
+                                <core:Item text="scss" />
+                                <core:Item text="sh" />
+                                <core:Item text="sjs" />
+                                <core:Item text="smarty" />
+                                <core:Item text="snippets" />
+                                <core:Item text="soy_template" />
+                                <core:Item text="space" />
+                                <core:Item text="sql" />
+                                <core:Item text="sqlserver" />
+                                <core:Item text="stylus" />
+                                <core:Item text="svg" />
+                                <core:Item text="swift" />
+                                <core:Item text="swig" />
+                                <core:Item text="tcl" />
+                                <core:Item text="tex" />
+                                <core:Item text="text" />
+                                <core:Item text="textile" />
+                                <core:Item text="toml" />
+                                <core:Item text="tsx" />
+                                <core:Item text="twig" />
+                                <core:Item text="typescript" />
+                                <core:Item text="vala" />
+                                <core:Item text="vbscript" />
+                                <core:Item text="velocity" />
+                                <core:Item text="verilog" />
+                                <core:Item text="vhdl" />
+                                <core:Item text="wollok" />
+                                <core:Item text="xml" />
+                                <core:Item text="xquery" />
+                                <core:Item text="yaml" />
+                                <core:Item text="terraform" />
+                                <core:Item text="slim" />
+                                <core:Item text="redshift" />
+                                <core:Item text="red" />
+                                <core:Item text="puppet" />
+                                <core:Item text="php_laravel_blade" />
+                            </ComboBox>
+                        </VBox>
+                    </uxap:ObjectPageSubSection>
+
+                    <uxap:ObjectPageSubSection title="Code">
+                        <editor:CodeEditor
+                            type="{CodeType}"
+                            editable="false"
+                            id="articleEditorId"
+                            value="{Code}"
+                            height="500px"
+                        />
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+        </uxap:sections>
+    </uxap:ObjectPageLayout>
+</mvc:View>
+<!-- <m:Page
+        showNavButton="false"
+        navButtonPress=".onNavBack"
+    >
+        <ObjectPageLayout
+            id="ObjectPageLayout1"
+            upperCaseAnchorBar="false"
+            class="customPage"
+        >
+            <headerTitle>
+                <ObjectPageDynamicHeaderTitle areaShrinkRatio="1:5:5">
+                    <expandedHeading>
+                        <m:Title
+                            text="{Title}"
+                            id="titleText"
+                        />
+                    </expandedHeading>
+
+                    <snappedHeading
+                     >
+                        <m:Title text="{Title}" />
+                    </snappedHeading>
+
+                    <actions>
+                        <m:Button
+                            text="Edit"
+                            type="Emphasized"
+                            press=".onEdit"
+                            visible="true"
+                            id="editButton"
+                        />
+                        <m:Button
+                            text="Save"
+                            type="Emphasized"
+                            press=".onSaveChanges"
+                            visible="false"
+                            id="saveButton"
+                        />
+                        <m:Button
+                            text="Cancel"
+                            type="Default"
+                            press=".onCancel"
+                            visible="false"
+                            id="cancelButton"
+                        />
+                    </actions>
+                </ObjectPageDynamicHeaderTitle>
+            </headerTitle>
+
+            <headerContent>
+                <m:HeaderContainer>
+                    <m:VBox
+                        class="sapUiSmallMarginEnd sapUiSmallMarginBottom"
+                        width="500px"
+                    >
+                        <m:HBox class="sapUiTinyMarginBottom">
+                            <m:Label
+                                text="Created by:"
+                                class="sapUiSmallMarginEnd"
+                            />
+                            <m:Text text="{CreatedBy}" />
+                        </m:HBox>
+
+                        <m:HBox class="sapUiTinyMarginBottom">
+                            <m:Label
+                                text="Changed on:"
+                                class="sapUiSmallMarginEnd"
+                            />
+                            <m:Text
+                                text="{
+                                path: 'LocalLastChangedAt',
+                                type: 'sap.ui.model.type.DateTime',
+                                formatOptions: {
+                                    style: 'medium'
+                                }
+                                }"
+                            />
+                        </m:HBox>
+                        <m:HBox class="sapUiTinyMarginBottom">
+                            <m:Label
+                                text="Tag"
+                                class="sapUiSmallMarginEnd"
+                            />
+                            <m:List items="{to_tags}">
+                                <m:DisplayListItem value="{TagName}"></m:DisplayListItem> 
+                            </m:List>
+                        </m:HBox>
+                        <m:HBox
+                            class="sapUiTinyMarginBottom"
+                            alignItems="Center"
+                            id="titleContainer"
+                            visible="false"
+                        >
+                            <m:Label
+                                text="New title:"
+                                class="sapUiSmallMarginEnd"
+                            />
+                            <m:Input
+                                value="{Title}"
+                                width="250px"
+                                editable="true"
+                                id="titleValue"
+                            />
+                        </m:HBox>
+                    </m:VBox>
+
+                    <m:VBox
+                        class="sapUiSmallMarginEnd sapUiSmallMarginBottom"
+                        width="500px"
+                    >
+                        <m:Title
+                            text="Description"
+                            class="sapUiTinyMarginBottom"
+                        />
+                        <m:Text
+                            text="{Description}"
+                            visible="true"
+                            id="descText"
+                        />
+                        <m:TextArea
+                            value="{Description}"
+                            rows="10"
+                            width="100%"
+                            visible="false"
+                            editable="true"
+                            id="descValue"
+                            maxLength="1000"
+                            showExceededText="true"
+                        />
+                    </m:VBox>
+                </m:HeaderContainer>
+            </headerContent>
+
+            <ObjectPageSection class="sapUiTinyMarginTop">
+           
+                <ObjectPageSubSection>
+                    <rte:RichTextEditor
+                        id="richTextId"
+                        class="sapUiSmallMarginTop mceContentBody"
+                        editable="true"
+                        editorType="TinyMCE6"
+                        customToolbar="true"
+                        showGroupClipboard="false"
+                        showGroupTextAlign="false"
+                        showGroupStructure="false"
+                        showGroupLink="false"
+                        showGroupFont="false"
+                        showGroupFontStyle="false"
+                        showGroupInsert="false"
+                        height="500px"
+                        width="100%"
+                        value="{Content}"
+                    />
+                </ObjectPageSubSection>
+
+                <ObjectPageSubSection title="Choose programming language:" >
+                    <m:VBox>
+                        <m:ComboBox 
+                      id="articleCombobox"
+                      change=".selectChange"
+                      value="{CodeType}"                      
+                      >
+                       <core:Item text="abap" />
+                       <core:Item text="abc" />
+                       <core:Item text="actionscript" />
+                       <core:Item text="ada" />
+                       <core:Item text="apache_conf" />
+                       <core:Item text="applescript" />
+                       <core:Item text="asciidoc" />
+                       <core:Item text="assembly_x86" />
+                       <core:Item text="autohotkey" />
+                       <core:Item text="batchfile" />
+                       <core:Item text="bro" />
+                       <core:Item text="c9search" />
+                       <core:Item text="c_cpp" />
+                       <core:Item text="cirru" />
+                       <core:Item text="clojure" />
+                       <core:Item text="cobol" />
+                       <core:Item text="coffee" />
+                       <core:Item text="coldfusion" />
+                       <core:Item text="csharp" />
+                       <core:Item text="css" />
+                       <core:Item text="csp" />
+                        <core:Item text="cssound_score" />
+                        <core:Item text="cssound_orchestra" />
+                        <core:Item text="cssound_document" />
+                       <core:Item text="curly" />
+                       <core:Item text="d" />
+                       <core:Item text="dart" />
+                       <core:Item text="diff" />
+                       <core:Item text="django" />
+                       <core:Item text="dockerfile" />
+                       <core:Item text="dot" />
+                       <core:Item text="drools" />
+                       <core:Item text="edifact" />
+                       <core:Item text="eiffel" />
+                       <core:Item text="ejs" />
+                       <core:Item text="elixir" />
+                       <core:Item text="elm" />
+                       <core:Item text="erlang" />
+                       <core:Item text="forth" />
+                       <core:Item text="fortran" />
+                       <core:Item text="ftl" />
+                       <core:Item text="fsharp" />
+                       <core:Item text="gcode" />
+                       <core:Item text="gherkin" />
+                       <core:Item text="gitignore" />
+                       <core:Item text="glsl" />
+                       <core:Item text="gobstones" />
+                       <core:Item text="golang" />
+                       <core:Item text="groovy" />
+                       <core:Item text="haml" />
+                       <core:Item text="handlebars" />
+                       <core:Item text="haskell" />
+                       <core:Item text="haskell_cabal" />
+                       <core:Item text="haxe" />
+                       <core:Item text="hjson" />
+                       <core:Item text="html" />
+                       <core:Item text="html_elixir" />
+                       <core:Item text="html_ruby" />
+                       <core:Item text="ini" />
+                       <core:Item text="io" />
+                       <core:Item text="jack" />
+                       <core:Item text="jade" />
+                       <core:Item text="java" />
+                        <core:Item text="javascript" />
+                        <core:Item text="json" />
+                        <core:Item text="jsoniq" />
+                        <core:Item text="jsp" />
+                        <core:Item text="jssm" />
+                        <core:Item text="jsx" />
+                        <core:Item text="julia" />
+                       <core:Item text="kotlin" />
+                       <core:Item text="latex" />
+                       <core:Item text="lean" />
+                       <core:Item text="less" />
+                       <core:Item text="liquid" />
+                       <core:Item text="lisp" />
+                       <core:Item text="live_script" />
+                       <core:Item text="livescript" />
+                       <core:Item text="logiql" />
+                       <core:Item text="lsl" />
+                       <core:Item text="lua" />
+                       <core:Item text="luapage" />
+                       <core:Item text="lucene" />
+                       <core:Item text="makefile" />
+                       <core:Item text="markdown" />
+                       <core:Item text="mask" />
+                       <core:Item text="matlab" />
+                       <core:Item text="mavens_mate_log" />
+                       <core:Item text="maze" />
+                       <core:Item text="mel" />
+                       <core:Item text="mips_assembler" />
+                       <core:Item text="mipsassembler" />
+                       <core:Item text="mixal" />
+                       <core:Item text="mushcode" />
+                       <core:Item text="mysql" />
+                       <core:Item text="nix" />
+                       <core:Item text="nsis" />
+                       <core:Item text="objectivec" />
+                       <core:Item text="ocaml" />
+                       <core:Item text="pascal" />
+                       <core:Item text="perl" />
+                       <core:Item text="pgsql" />
+                       <core:Item text="php" />
+                       <core:Item text="plain_text" />
+                       <core:Item text="powershell" />
+                       <core:Item text="praat" />
+                       <core:Item text="prolog" />
+                       <core:Item text="properties" />
+                       <core:Item text="protobuf" />
+                       <core:Item text="python" />
+                       <core:Item text="r" />
+                       <core:Item text="razor" />
+                       <core:Item text="rdoc" />
+                       <core:Item text="rhtml" />
+                       <core:Item text="rst" />
+                       <core:Item text="ruby" />
+                       <core:Item text="rust" />
+                       <core:Item text="sass" />
+                       <core:Item text="scad" />
+                       <core:Item text="scala" />
+                       <core:Item text="scheme" />
+                       <core:Item text="scss" />
+                       <core:Item text="sh" />
+                       <core:Item text="sjs" />
+                       <core:Item text="smarty" />
+                       <core:Item text="snippets" />
+                       <core:Item text="soy_template" />
+                       <core:Item text="space" />
+                       <core:Item text="sql" />
+                       <core:Item text="sqlserver" />
+                       <core:Item text="stylus" />
+                       <core:Item text="svg" />
+                       <core:Item text="swift" />
+                       <core:Item text="swig" />
+                       <core:Item text="tcl" />
+                       <core:Item text="tex" />
+                       <core:Item text="text" />
+                       <core:Item text="textile" />
+                       <core:Item text="toml" />
+                       <core:Item text="tsx" />
+                       <core:Item text="twig" />
+                       <core:Item text="typescript" />
+                       <core:Item text="vala" />
+                       <core:Item text="vbscript" />
+                       <core:Item text="velocity" />
+                       <core:Item text="verilog" />
+                       <core:Item text="vhdl" />
+                       <core:Item text="wollok" />
+                        <core:Item text="xml"/>
+                        <core:Item text="xquery" />
+                        <core:Item text="yaml" />
+                        <core:Item text="terraform" />
+                        <core:Item text="slim" />
+                        <core:Item text="redshift" />
+                        <core:Item text="red" />
+                        <core:Item text="puppet" />
+                        <core:Item text="php_laravel_blade" />
+                      </m:ComboBox>
+                    </m:VBox>
+                </ObjectPageSubSection>
+
+                <ObjectPageSubSection>
+                    <editor:CodeEditor
+                        type="{CodeType}"
+                        editable="false"
+                        id="articleEditorId"
+                        value="{Code}"
+                        height="400px"
+                    />
+                </ObjectPageSubSection>
+            </ObjectPageSection>
+        </ObjectPageLayout>
+    </m:Page> -->
