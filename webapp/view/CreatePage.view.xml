@@ -83,28 +83,7 @@
                                         width="500px"
                                         showValueHelp="false"
                                         placeholder="You can choose multiple categories. Enter values like Frontend, ABAP, etc.."
-                                        suggestionItems="{
-				                            path: '/UniqueTags',
-				                            sorter: { path: 'TagName' }
-			                                            }"
-                                        suggestionRows="{/TagName}"
                                     >
-                                        <suggestionColumns>
-                                            <Column
-                                                hAlign="Begin"
-                                                popinDisplay="Inline"
-                                                demandPopin="true"
-                                            >
-                                                <Label text="Name" />
-                                            </Column>
-                                        </suggestionColumns>
-                                        <suggestionRows>
-                                            <ColumnListItem>
-                                                <cells>
-                                                    <Label text="{TagName}" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </suggestionRows>
                                         <core:Item
                                             key="{TagName}"
                                             text="{TagName}"
@@ -117,7 +96,7 @@
                         <WizardStep
                             id="ContentStep"
                             title="Write your article"
-                            validated="false"
+                            optional="true"
                         >
                             <rte:RichTextEditor
                                 id="richtextEditorId"
@@ -325,3 +304,40 @@
 </mvc:View>
 
 
+ <!-- <MultiInput
+                                        suggestionItemSelected=".validateArticleWizard"
+                                        change=".tokenChange"
+                                        tokenUpdate=".validateArticleWizard"
+                                        required="true"
+                                        valueState="Error"
+                                        id="multiInputId"
+                                        width="500px"
+                                        showValueHelp="false"
+                                        placeholder="You can choose multiple categories. Enter values like Frontend, ABAP, etc.."
+                                        suggestionItems="{
+				                            path: '/UniqueTags',
+				                            sorter: { path: 'TagName' }
+			                                            }"
+                                        suggestionRows="{/TagName}"
+                                    >
+                                        <suggestionColumns>
+                                            <Column
+                                                hAlign="Begin"
+                                                popinDisplay="Inline"
+                                                demandPopin="true"
+                                            >
+                                                <Label text="Name" />
+                                            </Column>
+                                        </suggestionColumns>
+                                        <suggestionRows>
+                                            <ColumnListItem>
+                                                <cells>
+                                                    <Label text="{TagName}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </suggestionRows>
+                                        <core:Item
+                                            key="{TagName}"
+                                            text="{TagName}"
+                                        />
+                                    </MultiInput> -->

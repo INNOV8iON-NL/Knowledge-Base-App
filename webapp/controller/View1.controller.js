@@ -30,53 +30,6 @@ sap.ui.define([
 
             //----------------- Filter functions -------------------------
 
-            onSuggest: function (oEvent) {
-                let searchField = this.getView().byId("searchCategoryID");
-                searchField.suggest();
-            },
-
-            onSearchCategory: function(oEvent){
-
-                // oTeamsBinding.filter(new sap.ui.model.Filter({
-                //     path :"TEAM_2_EMPLOYEES",operator: sap.ui.model.FilterOperator.Any,
-                //     variable :"employee",
-                //     condition :new sap.ui.model.Filter("employee/AGE", sap.ui.model.FilterOperator.GT,42)}););
-
-                let sQuery = oEvent.getSource().getValue();
-
-                let oListBinding = this.getView().byId("idTable").getBinding("items");
-                oListBinding.filter(new sap.ui.model.Filter({
-                    path :"Articles",
-                    operator: FilterOperator.Any,
-                    variable :"Tags",
-                    condition : new sap.ui.model.Filter("Tags/Tagname", sap.ui.model.FilterOperator.EQ, sQuery)
-                }));
-            },
-
-
-            onSearch: function (oEvent) {
-                //add filter for search
-                let aFilters = [];
-                let sQuery = oEvent.getSource().getValue();
-                if (sQuery && sQuery.length > 0) {
-                    let filter = new Filter({
-                        filters: [
-                            new Filter("Title", FilterOperator.Contains, sQuery),
-                            new Filter("Description", FilterOperator.Contains, sQuery),
-                            new Filter("CreatedBy", FilterOperator.Contains, sQuery),
-                        ],
-                        or: true //sets whether Title or description should contain sQuery
-                    });
-
-                    aFilters.push(filter);
-                }
-
-                //update list binding
-                let oList = this.byId("idTable");
-                let oBinding = oList.getBinding("items");
-                console.log(oBinding);
-                oBinding.filter(aFilters);
-            },
 
             onSelectionChange: function (oEvent) {
                 let oList = oEvent.getSource();
@@ -88,34 +41,6 @@ sap.ui.define([
                 let sText = (bSelected) ? aContexts.length + " selected" : null;
                 oDeleteButton.setVisible(bSelected);
                 //oLabel.setText(sText);
-            },
-
-            //----------------- Sorter function -------------------------
-
-            onSortTitles: function (oEvent) {
-                let oView = this.getView();
-                let oTable = oView.byId("idTable");
-                let oBinding = oTable.getBinding("items");
-
-                let sSortKey = "Title";
-                this.bDescending = !this.bDescending; //enable toggleing between true and false
-                let aSorter = [];
-
-                aSorter.push(new sap.ui.model.Sorter(sSortKey, !this.bDescending));
-                oBinding.sort(aSorter);
-            },
-
-            onSortDates: function () {
-                let oView = this.getView();
-                let oTable = oView.byId("idTable");
-                let oBinding = oTable.getBinding("items");
-
-                let sSortKey = "LocalLastChangedAt";
-                this.bDescending = !this.bDescending; //enable toggleing between true and false
-                let aSorter = [];
-
-                aSorter.push(new sap.ui.model.Sorter(sSortKey, this.bDescending));
-                oBinding.sort(aSorter);
             },
 
             //----------------- Go to create -------------------------    

@@ -1,0 +1,7 @@
+{
+    "editor.cursorStyle": "line",
+    "editor.hideCursorInOverviewRuler": true,
+    "editor.cursorSmoothCaretAnimation": "off",
+    "editor.cursorSurroundingLines": 0,
+    "screencastMode.verticalOffset": 20
+}

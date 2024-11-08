@@ -34,15 +34,13 @@ server:
             url: http://iqibt-public.sabaas.nl:8001
             client: '100'
             destination: ECD
+            authenticationType: BasicAuthentication
     - name: sap-fe-mockserver
       beforeMiddleware: csp
       configuration:
         mountPath: /
         services:
           - urlPath: /sap/opu/odata/sap/ZKNOWLEDGE_UI_ARTICLES_O2
-            metadataPath: ./webapp/localService/metadata.xml
-            mockdataPath: ./webapp/localService/data
-            generateMockData: true
         annotations: []
     - name: fiori-tools-preview
       afterMiddleware: fiori-tools-appreload

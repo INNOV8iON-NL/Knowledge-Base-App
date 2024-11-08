@@ -27,11 +27,18 @@ sap.ui.define([
                 const sPath = oEntry.getPath();
                 const oFinishButton = oView.byId("newArticleWizard");
                 const oMultiInput = oView.byId("multiInputId");
+                const oRichText = oView.byId("richtextEditorId");
                 // const mainButton = sap.ui.getCore().byId('backBtn');
 
                 oView.bindElement({
                     path: sPath
                 });
+
+                console.log(oView);
+
+                // oRichText.bindElement({
+                //     path: "/" + sPath + "/to_content"
+                // })
 
                 oView.byId("multiInputId").removeAllTokens();
                 this.resetWizard();
@@ -43,6 +50,43 @@ sap.ui.define([
                 }
                 })
             },
+
+
+            // renderEditControls: function () {
+            //     this.getView().byId("articleContent").removeAllItems();
+
+            //     let sPath = this.getView().getModel().createKey("Articles", {
+            //         GuID: this.getView().getBindingContext().getObject().GuID
+            //     });
+
+            //     this.getView().getModel().read("/" + sPath + "/to_content", {
+            //         success: function (oData) {
+            //             for (let x = 0; x < oData.results.length; x++) {
+            //                 let oRichText = new RichTextEditor({
+            //                     value: "{Content}",
+            //                      width: "100%",
+            //                      height: "450px"
+            //                 })
+
+            //                 // Create binding path
+            //                 const sContentPath = this.getView().getModel().createKey("Content", {
+            //                     GuID: oData.results[x].GuID
+            //                 });
+
+            //                 // Bind formatted text to content path
+            //                 oRichText.bindElement("/" + sContentPath);
+
+            //                 // Add formatted text to vbox
+            //                 this.getView().byId("articleContent").insertItem(oRichText);
+            //             }
+            //             console.log("Success")
+            //         }.bind(this),
+            //         error: function (oData) {
+            //             console.log("Error")
+            //         }
+            //     });
+
+            // },
 
             //----------------- Function for creating tokens for input  -------------------------
             tokenChange: function (oEvent) {
@@ -93,6 +137,7 @@ sap.ui.define([
                     return false;
                 } else {
                     this.getView().byId("newArticleWizard").validateStep(this.getView().byId("TitleStep"));
+                    this.getView().byId("newArticleWizard").validateStep(this.getView().byId("ContentStep"));
                   return true;
                 }
             },
@@ -116,14 +161,18 @@ sap.ui.define([
             handleWizardSubmit: function () {
                 let oValidFirstStep = this.validateArticleWizard();
                 let oValidSecondStep = this.validateContentWizard();
+                let oContent = this.getView().byId("richtextEditorId").getValue();
                 const allTokens = this.getView().byId("multiInputId").getTokens();
                 const tokenTextArr = [];
+
 
                 //get the text of each tokens
                 for (let x = 0; x < allTokens.length; x++) {
                     const tokenText = allTokens[x].getText();
                     tokenTextArr.push(tokenText);
                 };
+
+                //const oContent = this.getView().byId("richtextEditorId").getValue();
 
                 //Validation
                 if (oValidFirstStep === false || oValidSecondStep === false ) {
@@ -139,14 +188,18 @@ sap.ui.define([
                         const oMultiInput = this.getView().byId("multiInputId");
                         oMultiInput.removeAllTokens();
 
+                        //Create entry for TagName
                         for (let i = 0; i < tokenTextArr.length; i++) {
-
                             const oTagEntry = this.getView().getModel().createEntry("/Tags");
-
                             this.getView().getModel().setProperty(oTagEntry.getPath() + "/TagName", tokenTextArr[i]);
                             this.getView().getModel().setProperty(oTagEntry.getPath() + "/ArticleguID", articleGuid);
-                        }
+                        };
 
+                        //Create entry for Content
+                        const oContentEntry = this.getView().getModel().createEntry("/Content");
+                        this.getView().getModel().setProperty(oContentEntry.getPath() + "/Content", oContent);
+                        this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleguID", articleGuid);
+                        
                         this.getView().getModel().submitChanges({
                             success: function (oData) {
                             }.bind(this),
@@ -235,8 +288,8 @@ sap.ui.define([
                 this.getView().byId("descriptionId").setValue("");
                 this.getView().byId("articleTitleId").setValueState("Error");
                 this.getView().byId("articleTitleId").setValue("");
-                this.getView().byId("richtextEditorId").addStyleClass("richtextWarning");
-                this.getView().byId("richtextEditorId").setValue("");
+                // this.getView().byId("richtextEditorId").addStyleClass("richtextWarning");
+                // this.getView().byId("richtextEditorId").setValue("");
             },
         },
         );
