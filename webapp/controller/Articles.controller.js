@@ -32,7 +32,7 @@ sap.ui.define([
                 var oArgs = oEvent.getParameter("arguments");
                 let oView = this.getView();
                 this._sArticleId = oArgs.GuID;
-                let sPath = "/Articles(guid'" + this._sArticleId + "')" + "/to_content";
+                let sPath = "/Articles(guid'" + this._sArticleId + "')" + "/to_contentValue";
                 // let formattedText = new sap.m.FormattedText({
                 //     text:"new text"
                 // });
@@ -197,7 +197,7 @@ sap.ui.define([
                 let sMainPath = this.getView().getModel().createKey("Articles", {
                     GuID: this.getView().getBindingContext().getObject().GuID
                 });
-                let sPath = "/" + sMainPath + "/to_content";
+                let sPath = "/" + sMainPath + "/to_contentValue";
 
                 this.getView().byId("descText").setVisible(true);
                 this.getView().byId("descValue").setVisible(false);
@@ -255,14 +255,15 @@ sap.ui.define([
                     success: function (oData) {
                         for (let x = 0; x < oData.results.length; x++) {
                             let oFormattedText = new sap.m.FormattedText({
-                                htmlText: "{Content}",
+                                htmlText: "{ContentValue}",
                                 width: "100%"
 
                             })
 
                             // Create binding path
-                            const sContentPath = this.getView().getModel().createKey("Content", {
-                                GuID: oData.results[x].GuID
+                            const sContentPath = this.getView().getModel().createKey("ContentValue", {
+                                GuID: oData.results[x].GuID,
+                                ArticleGuID: oData.results[x].ArticleGuID
                             });
 
                             // Bind formatted text to content path
@@ -282,21 +283,22 @@ sap.ui.define([
                 this.getView().byId("articleContent").removeAllItems();
 
                 let sPath = this.getView().getModel().createKey("Articles", {
-                    GuID: this.getView().getBindingContext().getObject().GuID
+                    GuID: this.getView().getBindingContext().getObject().GuID,
                 });
 
-                this.getView().getModel().read("/" + sPath + "/to_content", {
+                this.getView().getModel().read("/" + sPath + "/to_contentValue", {
                     success: function (oData) {
                         for (let x = 0; x < oData.results.length; x++) {
                             let oRichText = new RichTextEditor({
-                                value: "{Content}",
+                                value: "{ContentValue}",
                                  width: "100%",
                                  height: "450px"
                             })
 
                             // Create binding path
-                            const sContentPath = this.getView().getModel().createKey("Content", {
-                                GuID: oData.results[x].GuID
+                            const sContentPath = this.getView().getModel().createKey("ContentValue", {
+                                GuID: oData.results[x].GuID,
+                                ArticleGuID: oData.results[x].ArticleGuID
                             });
 
                             // Bind formatted text to content path

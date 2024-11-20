@@ -1,9 +1,12 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageBox",
-    "sap/ui/model/type/Date",
+
+    "sap/ui/richtexteditor/RichTextEditor",
+    "sap/ui/model/type/DateTime"
+
 ],
-    function (Controller, MessageBox, Date) {
+    function (Controller, MessageBox, RichTextEditor, DateTime) {
         "use strict";
 
         return Controller.extend("articlesfreestyle.controller.Create", {
@@ -34,59 +37,24 @@ sap.ui.define([
                     path: sPath
                 });
 
-                console.log(oView);
+                this._sPath = sPath;
 
                 // oRichText.bindElement({
                 //     path: "/" + sPath + "/to_content"
                 // })
 
+             
                 oView.byId("multiInputId").removeAllTokens();
                 this.resetWizard();
+                //this.onCreateNewRichText();
                 oFinishButton.setFinishButtonText("Submit");
-                oMultiInput.attachBrowserEvent('mouseout', (oEvent)=> {
-                    if(oMultiInput.getTokens().length < 1) {
-                    oMultiInput.setValueState("Error");
-                    this.getView().byId("newArticleWizard").invalidateStep(this.getView().byId("TitleStep"));
-                }
+                oMultiInput.attachBrowserEvent('mouseout', (oEvent) => {
+                    if (oMultiInput.getTokens().length < 1) {
+                        oMultiInput.setValueState("Error");
+                        this.getView().byId("newArticleWizard").invalidateStep(this.getView().byId("TitleStep"));
+                    }
                 })
             },
-
-
-            // renderEditControls: function () {
-            //     this.getView().byId("articleContent").removeAllItems();
-
-            //     let sPath = this.getView().getModel().createKey("Articles", {
-            //         GuID: this.getView().getBindingContext().getObject().GuID
-            //     });
-
-            //     this.getView().getModel().read("/" + sPath + "/to_content", {
-            //         success: function (oData) {
-            //             for (let x = 0; x < oData.results.length; x++) {
-            //                 let oRichText = new RichTextEditor({
-            //                     value: "{Content}",
-            //                      width: "100%",
-            //                      height: "450px"
-            //                 })
-
-            //                 // Create binding path
-            //                 const sContentPath = this.getView().getModel().createKey("Content", {
-            //                     GuID: oData.results[x].GuID
-            //                 });
-
-            //                 // Bind formatted text to content path
-            //                 oRichText.bindElement("/" + sContentPath);
-
-            //                 // Add formatted text to vbox
-            //                 this.getView().byId("articleContent").insertItem(oRichText);
-            //             }
-            //             console.log("Success")
-            //         }.bind(this),
-            //         error: function (oData) {
-            //             console.log("Error")
-            //         }
-            //     });
-
-            // },
 
             //----------------- Function for creating tokens for input  -------------------------
             tokenChange: function (oEvent) {
@@ -138,7 +106,7 @@ sap.ui.define([
                 } else {
                     this.getView().byId("newArticleWizard").validateStep(this.getView().byId("TitleStep"));
                     this.getView().byId("newArticleWizard").validateStep(this.getView().byId("ContentStep"));
-                  return true;
+                    return true;
                 }
             },
 
@@ -160,11 +128,19 @@ sap.ui.define([
             //----------------- Submit function  -------------------------
             handleWizardSubmit: function () {
                 let oValidFirstStep = this.validateArticleWizard();
-                let oValidSecondStep = this.validateContentWizard();
-                let oContent = this.getView().byId("richtextEditorId").getValue();
+                //let oValidSecondStep = this.validateContentWizard();
+                let oVBoxContent = this.getView().byId("wizardVBoxId").getItems();
                 const allTokens = this.getView().byId("multiInputId").getTokens();
                 const tokenTextArr = [];
+                let oAllContent = [];
 
+                for (let x = 0; x < oVBoxContent.length; x++) {
+                    let oContentId = oVBoxContent[x].getId();
+                    //Select Richtext editors from VBox items
+                    if (oContentId.includes("richtextEditor")) {
+                        oAllContent.push(oVBoxContent[x].getValue());
+                    }
+                }
 
                 //get the text of each tokens
                 for (let x = 0; x < allTokens.length; x++) {
@@ -175,7 +151,9 @@ sap.ui.define([
                 //const oContent = this.getView().byId("richtextEditorId").getValue();
 
                 //Validation
-                if (oValidFirstStep === false || oValidSecondStep === false ) {
+                if (oValidFirstStep === false
+                    //|| oValidSecondStep === false
+                ) {
                     //show an error message, rest of code will not execute.
                     MessageBox.warning("Some information is still missing. Please inspect the form again.");
                     return false;
@@ -196,10 +174,12 @@ sap.ui.define([
                         };
 
                         //Create entry for Content
-                        const oContentEntry = this.getView().getModel().createEntry("/Content");
-                        this.getView().getModel().setProperty(oContentEntry.getPath() + "/Content", oContent);
-                        this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleguID", articleGuid);
-                        
+                        for (let x = 0; x < oAllContent.length; x++) {
+                            const oContentEntry = this.getView().getModel().createEntry("/Articles(guid'" + articleGuid + "')" + "/to_contentValue");
+                            this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", oAllContent[x]);
+                            this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleGuID", articleGuid);
+                        };
+
                         this.getView().getModel().submitChanges({
                             success: function (oData) {
                             }.bind(this),
@@ -275,6 +255,7 @@ sap.ui.define([
                 this.getView().getModel().resetChanges();
                 let oWizard = this.getView().byId("newArticleWizard");
                 let oFirstStep = oWizard.getSteps()[0];
+                let oVBoxContent = this.getView().byId("wizardVBoxId").removeAllItems();
 
                 oWizard.discardProgress(oFirstStep);
                 oWizard.goToStep(oFirstStep);
@@ -291,22 +272,45 @@ sap.ui.define([
                 // this.getView().byId("richtextEditorId").addStyleClass("richtextWarning");
                 // this.getView().byId("richtextEditorId").setValue("");
             },
+
+            onCreateNewRichText: function () {
+                let oVBoxContent = this.getView().byId("wizardVBoxId").getItems();
+                let oIndex = oVBoxContent.length;
+                let oDate = Date.now();
+
+                let oButton = new sap.m.Button({
+                    text: "Delete textbox",
+                    icon: "sap-icon://delete",
+                    press: function(oEvent){
+                        console.log(oEvent.getSource());
+                    }
+                });
+
+                let oRichText = new RichTextEditor({
+                    width: "100%",
+                    height: "450px",
+                    id:  "richtextEditorId" + oDate
+                });
+                this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 1);
+                this.getView().byId("wizardVBoxId").insertItem(oRichText, oIndex + 2);
+            },
+
         },
         );
     });
 
 
-           //Later (this was placed in _onObjectMatched)
-                // const sapTitle = sap.ui.getCore().byId('shellAppTitle');
-                // document.getElementsByTagName('a')[1].onclick = function() {console.log("hello world")}
-                //   sapTitle.attachPress(this.mainNavPress, this);
+//Later (this was placed in _onObjectMatched)
+// const sapTitle = sap.ui.getCore().byId('shellAppTitle');
+// document.getElementsByTagName('a')[1].onclick = function() {console.log("hello world")}
+//   sapTitle.attachPress(this.mainNavPress, this);
 
-                //  Manipulate the main nav button to warn user about data loss
-                // mainButton.attachPress(this.mainNavPress, this);
+//  Manipulate the main nav button to warn user about data loss
+// mainButton.attachPress(this.mainNavPress, this);
 
-                //  Press event needs to be detached so it`s not giving a warning for pressing other pages` nav buttons
-                // this.oView.addEventDelegate({
-                //     onBeforeHide: function (oEvent) {
-                //         mainButton.detachPress(this.mainNavPress, this);
-                //     }
-                // }, this)
+//  Press event needs to be detached so it`s not giving a warning for pressing other pages` nav buttons
+// this.oView.addEventDelegate({
+//     onBeforeHide: function (oEvent) {
+//         mainButton.detachPress(this.mainNavPress, this);
+//     }
+// }, this)

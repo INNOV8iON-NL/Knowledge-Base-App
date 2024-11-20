@@ -83,7 +83,28 @@
                                         width="500px"
                                         showValueHelp="false"
                                         placeholder="You can choose multiple categories. Enter values like Frontend, ABAP, etc.."
+                                        suggestionItems="{
+				                            path: '/UniqueTags',
+				                            sorter: { path: 'TagName' }
+			                                            }"
+                                        suggestionRows="{/TagName}"
                                     >
+                                        <suggestionColumns>
+                                            <Column
+                                                hAlign="Begin"
+                                                popinDisplay="Inline"
+                                                demandPopin="true"
+                                            >
+                                                <Label text="Name" />
+                                            </Column>
+                                        </suggestionColumns>
+                                        <suggestionRows>
+                                            <ColumnListItem>
+                                                <cells>
+                                                    <Label text="{TagName}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </suggestionRows>
                                         <core:Item
                                             key="{TagName}"
                                             text="{TagName}"
@@ -96,13 +117,21 @@
                         <WizardStep
                             id="ContentStep"
                             title="Write your article"
-                            optional="true"
+                            validated="true"
                         >
-                            <rte:RichTextEditor
+                            <MessageStrip
+                                class="sapUiSmallMarginTopBottom"
+                                text="You can write and format your article content here. You can also add code snippets. Multiple text blocks and code snippets can be added in this step. "
+                                showIcon="true"
+                            />
+                               <VBox 
+                            id="wizardVBoxId"
+                            >
+                            <!-- <rte:RichTextEditor
                                 id="richtextEditorId"
                                 class="richtextWarning"
                                 editable="true"
-                                height="600px"
+                                height="450px"
                                 editorType="TinyMCE6"
                                 width="100%"
                                 required="true"
@@ -113,17 +142,10 @@
                                 showGroupLink="true"
                                 showGroupFont="true"
                                 showGroupInsert="true"
-                                value="{Content}"
                                 tooltip="Create and format your content here"
                                 change=".validateContentWizard"
-                            />
-                        </WizardStep>
+                            /> -->
 
-                        <WizardStep
-                            id="CodeStep"
-                            title="Add code snippets"
-                            optional="true"
-                        >
                             <ComboBox
                                 id="comboBoxId"
                                 change=".selectChange"
@@ -295,16 +317,210 @@
                                 height="400px"
                                 width="100%"
                             />
+
+                         </VBox>
+
+                            <Button
+                                text="Add new text block"
+                                icon="sap-icon://add"
+                                type="Default"
+                                class="sapUiSmallMarginRight"
+                                iconFirst="false"
+                                press=".onCreateNewRichText"
+                            />
+                            <Button
+                                text="Add new code block"
+                                icon="sap-icon://add"
+                                type="Default"
+                                class="sapUiSmallMarginRight"
+                                iconFirst="false"
+                            />
                         </WizardStep>
+<!-- 
+                        <WizardStep
+                            id="CodeStep"
+                            title="Add code snippets"
+                            optional="true"
+                        >
+                            <ComboBox
+                                id="comboBoxId2"
+                                change=".selectChange"
+                                placeholder="Choose programming language"
+                                width="250px"
+                            >
+                                <core:Item text="abap" />
+                                <core:Item text="abc" />
+                                <core:Item text="actionscript" />
+                                <core:Item text="ada" />
+                                <core:Item text="apache_conf" />
+                                <core:Item text="applescript" />
+                                <core:Item text="asciidoc" />
+                                <core:Item text="assembly_x86" />
+                                <core:Item text="autohotkey" />
+                                <core:Item text="batchfile" />
+                                <core:Item text="bro" />
+                                <core:Item text="c9search" />
+                                <core:Item text="c_cpp" />
+                                <core:Item text="cirru" />
+                                <core:Item text="clojure" />
+                                <core:Item text="cobol" />
+                                <core:Item text="coffee" />
+                                <core:Item text="coldfusion" />
+                                <core:Item text="csharp" />
+                                <core:Item text="css" />
+                                <core:Item text="csp" />
+                                <core:Item text="cssound_score" />
+                                <core:Item text="cssound_orchestra" />
+                                <core:Item text="cssound_document" />
+                                <core:Item text="curly" />
+                                <core:Item text="d" />
+                                <core:Item text="dart" />
+                                <core:Item text="diff" />
+                                <core:Item text="django" />
+                                <core:Item text="dockerfile" />
+                                <core:Item text="dot" />
+                                <core:Item text="drools" />
+                                <core:Item text="edifact" />
+                                <core:Item text="eiffel" />
+                                <core:Item text="ejs" />
+                                <core:Item text="elixir" />
+                                <core:Item text="elm" />
+                                <core:Item text="erlang" />
+                                <core:Item text="forth" />
+                                <core:Item text="fortran" />
+                                <core:Item text="ftl" />
+                                <core:Item text="fsharp" />
+                                <core:Item text="gcode" />
+                                <core:Item text="gherkin" />
+                                <core:Item text="gitignore" />
+                                <core:Item text="glsl" />
+                                <core:Item text="gobstones" />
+                                <core:Item text="golang" />
+                                <core:Item text="groovy" />
+                                <core:Item text="haml" />
+                                <core:Item text="handlebars" />
+                                <core:Item text="haskell" />
+                                <core:Item text="haskell_cabal" />
+                                <core:Item text="haxe" />
+                                <core:Item text="hjson" />
+                                <core:Item text="html" />
+                                <core:Item text="html_elixir" />
+                                <core:Item text="html_ruby" />
+                                <core:Item text="ini" />
+                                <core:Item text="io" />
+                                <core:Item text="jack" />
+                                <core:Item text="jade" />
+                                <core:Item text="java" />
+                                <core:Item text="javascript" />
+                                <core:Item text="json" />
+                                <core:Item text="jsoniq" />
+                                <core:Item text="jsp" />
+                                <core:Item text="jssm" />
+                                <core:Item text="jsx" />
+                                <core:Item text="julia" />
+                                <core:Item text="kotlin" />
+                                <core:Item text="latex" />
+                                <core:Item text="lean" />
+                                <core:Item text="less" />
+                                <core:Item text="liquid" />
+                                <core:Item text="lisp" />
+                                <core:Item text="live_script" />
+                                <core:Item text="livescript" />
+                                <core:Item text="logiql" />
+                                <core:Item text="lsl" />
+                                <core:Item text="lua" />
+                                <core:Item text="luapage" />
+                                <core:Item text="lucene" />
+                                <core:Item text="makefile" />
+                                <core:Item text="markdown" />
+                                <core:Item text="mask" />
+                                <core:Item text="matlab" />
+                                <core:Item text="mavens_mate_log" />
+                                <core:Item text="maze" />
+                                <core:Item text="mel" />
+                                <core:Item text="mips_assembler" />
+                                <core:Item text="mipsassembler" />
+                                <core:Item text="mixal" />
+                                <core:Item text="mushcode" />
+                                <core:Item text="mysql" />
+                                <core:Item text="nix" />
+                                <core:Item text="nsis" />
+                                <core:Item text="objectivec" />
+                                <core:Item text="ocaml" />
+                                <core:Item text="pascal" />
+                                <core:Item text="perl" />
+                                <core:Item text="pgsql" />
+                                <core:Item text="php" />
+                                <core:Item text="plain_text" />
+                                <core:Item text="powershell" />
+                                <core:Item text="praat" />
+                                <core:Item text="prolog" />
+                                <core:Item text="properties" />
+                                <core:Item text="protobuf" />
+                                <core:Item text="python" />
+                                <core:Item text="r" />
+                                <core:Item text="razor" />
+                                <core:Item text="rdoc" />
+                                <core:Item text="rhtml" />
+                                <core:Item text="rst" />
+                                <core:Item text="ruby" />
+                                <core:Item text="rust" />
+                                <core:Item text="sass" />
+                                <core:Item text="scad" />
+                                <core:Item text="scala" />
+                                <core:Item text="scheme" />
+                                <core:Item text="scss" />
+                                <core:Item text="sh" />
+                                <core:Item text="sjs" />
+                                <core:Item text="smarty" />
+                                <core:Item text="snippets" />
+                                <core:Item text="soy_template" />
+                                <core:Item text="space" />
+                                <core:Item text="sql" />
+                                <core:Item text="sqlserver" />
+                                <core:Item text="stylus" />
+                                <core:Item text="svg" />
+                                <core:Item text="swift" />
+                                <core:Item text="swig" />
+                                <core:Item text="tcl" />
+                                <core:Item text="tex" />
+                                <core:Item text="text" />
+                                <core:Item text="textile" />
+                                <core:Item text="toml" />
+                                <core:Item text="tsx" />
+                                <core:Item text="twig" />
+                                <core:Item text="typescript" />
+                                <core:Item text="vala" />
+                                <core:Item text="vbscript" />
+                                <core:Item text="velocity" />
+                                <core:Item text="verilog" />
+                                <core:Item text="vhdl" />
+                                <core:Item text="wollok" />
+                                <core:Item text="xml" />
+                                <core:Item text="xquery" />
+                                <core:Item text="yaml" />
+                                <core:Item text="terraform" />
+                                <core:Item text="slim" />
+                                <core:Item text="redshift" />
+                                <core:Item text="red" />
+                                <core:Item text="puppet" />
+                                <core:Item text="php_laravel_blade" />
+                            </ComboBox>
+                            <editor:CodeEditor
+                                id="editorId2"
+                                type="{CodeType}"
+                                value="{Code}"
+                                height="400px"
+                                width="100%"
+                            />
+                        </WizardStep> -->
                     </Wizard>
                 </content>
             </Page>
         </pages>
     </NavContainer>
 </mvc:View>
-
-
- <!-- <MultiInput
+<!-- <MultiInput
                                         suggestionItemSelected=".validateArticleWizard"
                                         change=".tokenChange"
                                         tokenUpdate=".validateArticleWizard"
