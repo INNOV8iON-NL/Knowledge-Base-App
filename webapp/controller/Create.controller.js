@@ -277,12 +277,25 @@ sap.ui.define([
                 let oVBoxContent = this.getView().byId("wizardVBoxId").getItems();
                 let oIndex = oVBoxContent.length;
                 let oDate = Date.now();
+                let oView = this.getView();
 
                 let oButton = new sap.m.Button({
                     text: "Delete textbox",
                     icon: "sap-icon://delete",
+                    id: "Button" + oDate,
                     press: function(oEvent){
-                        console.log(oEvent.getSource());
+                        //Slice down the value for oDate
+                        let oId = oEvent.getSource().sId.slice(6, 19);
+                        this.oView = oView;
+                        let oElementsArr = oView.byId("wizardVBoxId");
+                        let oElement = oElementsArr.getItems();
+
+                        for (let x = 0; x < oElement.length; x++){
+                            //If Id contains oDate, remove from view
+                            if(oElement[x].sId.includes(oId)){
+                                oElementsArr.removeItem(oElement[x]);
+                            }
+                        }                    
                     }
                 });
 
