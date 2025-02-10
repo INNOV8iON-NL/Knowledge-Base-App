@@ -3,9 +3,10 @@ sap.ui.define([
     "sap/m/MessageBox",
     "sap/m/FormattedText",
     "sap/ui/model/json/JSONModel",
-    "sap/ui/richtexteditor/RichTextEditor"
+    "sap/ui/richtexteditor/RichTextEditor",
+    "sap/ui/codeeditor/CodeEditor"
 ],
-    function (Controller, FormattedText, MessageBox, JSONModel, RichTextEditor) {
+    function (Controller, FormattedText, MessageBox, JSONModel, RichTextEditor, CodeEditor) {
         "use strict";
 
         return Controller.extend("articlesfreestyle.controller.Articles", {
@@ -22,7 +23,7 @@ sap.ui.define([
                 const oModel = new JSONModel();
                 oModel.setSizeLimit(200);
                 oModel.loadData("model/codecollection.json");
-                this.getView().byId("articleCombobox").setModel(oModel);
+                // this.getView().byId("articleCombobox").setModel(oModel);
             },
 
             getRouter: function () {
@@ -32,14 +33,14 @@ sap.ui.define([
                 var oArgs = oEvent.getParameter("arguments");
                 let oView = this.getView();
                 this._sArticleId = oArgs.GuID;
-                let sPath = "/Articles(guid'" + this._sArticleId + "')" + "/to_contentValue";
+                let sContentPath = "/Articles(guid'" + this._sArticleId + "')" + "/to_contentValue";
+                let sCodePath = "/Articles(guid'" + this._sArticleId + "')" + "/to_codeValue";
                 // let formattedText = new sap.m.FormattedText({
                 //     text:"new text"
                 // });
 
-                // console.log(sPath);
 
-                this.renderDisplayControls(sPath);
+                this.renderDisplayControls(sContentPath, sCodePath);
 
                 oView.bindElement({
                     path: "/Articles(guid'" + this._sArticleId + "')",
@@ -70,7 +71,7 @@ sap.ui.define([
                 // this.onCancel();
 
                 //  Manipulate the main nav button to warn user about data loss
-                sap.ui.getCore().byId('backBtn').attachPress(this.mainNavPress, this);
+                // sap.ui.getCore().byId('backBtn').attachPress(this.mainNavPress, this);
 
                 //  Press event needs to be detached so it`s not giving a warning for pressing other pages` nav buttons
                 this.oView.addEventDelegate({
@@ -79,7 +80,7 @@ sap.ui.define([
                         //Reset possible changes and input states
                         // this.onCancel();
 
-                        sap.ui.getCore().byId('backBtn').detachPress(this.mainNavPress, this);
+                        // sap.ui.getCore().byId('backBtn').detachPress(this.mainNavPress, this);
                     }
                 }, this)
             },
@@ -196,7 +197,7 @@ sap.ui.define([
                 let sMainPath = this.getView().getModel().createKey("Articles", {
                     GuID: this.getView().getBindingContext().getObject().GuID
                 });
-                let sPath = "/" + sMainPath + "/to_contentValue";
+                let sContentPath = "/" + sMainPath + "/to_contentValue";
 
                 this.getView().byId("descText").setVisible(true);
                 this.getView().byId("descValue").setVisible(false);
@@ -209,7 +210,7 @@ sap.ui.define([
                 this.getView().byId("cancelButton").setVisible(false);
                 this._isEditing = false;
 
-                this.renderDisplayControls(sPath);
+                this.renderDisplayControls(sContentPath);
 
                 //Refresh window so possible modifications disappear
                 this.getView().getModel().resetChanges();
@@ -246,17 +247,19 @@ sap.ui.define([
                 }
             },
 
-            renderDisplayControls: function (sPath) {
+            renderDisplayControls: function (sContentPath, sCodePath) {
+                //remove items so they are not displayed every time the page loads again
                 this.getView().byId("articleContent").removeAllItems();
+                this.getView().byId("articleCode").removeAllItems();
+                this.getView().byId("articleCodeType").removeAllItems();
 
                 // /Content(guid'xxx')
-                this.getView().getModel().read(sPath, {
+                this.getView().getModel().read(sContentPath, {
                     success: function (oData) {
                         for (let x = 0; x < oData.results.length; x++) {
                             let oFormattedText = new sap.m.FormattedText({
                                 htmlText: "{ContentValue}",
                                 width: "100%"
-
                             })
 
                             // Create binding path
@@ -276,17 +279,48 @@ sap.ui.define([
                         console.log(oError);
                     }
                 });
+
+                //display Code value
+                this.getView().getModel().read(sCodePath, {
+                    success: function (oData) {
+                        for (let x = 0; x < oData.results.length; x++) {
+                            let oEditor = new sap.ui.codeeditor.CodeEditor({
+                                value: "{CodeValue}",
+                                type: "{CodeType}",
+                                editable: false,
+                                width: "100%",
+                                height: "500px"
+                            })
+
+                            //Create binding path
+                            const sCodePath = this.getView().getModel().createKey("CodeValue", {
+                                GuID: oData.results[x].GuID,
+                                ArticleGuID: oData.results[x].ArticleGuID
+                            });
+
+                            oEditor.bindElement("/" + sCodePath);
+                            this.getView().byId("articleCode").insertItem(oEditor);
+                        }
+                    }.bind(this),
+                    error: function (oError){
+                        console.log(oError);
+                    }
+                })        
             },
 
             renderEditControls: function () {
                 let oView = this.getView();
-                oView.byId("articleContent").removeAllItems();
+                oView.byId("articleContent").removeAllItems(); 
+                oView.byId("articleCode").removeAllItems();
+                oView.byId("articleCodeType").removeAllItems();
+                let oDate = Date.now();
 
                 let articleGuID = oView.getBindingContext().getObject().GuID;
 
                 let sPath = oView.getModel().createKey("Articles", {
                     GuID: articleGuID
                 });
+
 
                 oView.getModel().read("/" + sPath + "/to_contentValue", {
                     success: function (oData) {
@@ -295,7 +329,7 @@ sap.ui.define([
                             let oDeleteButton = new sap.m.Button({
                                 text: "Delete textbox",
                                 icon: "sap-icon://delete",
-                                id: "Button" + oData.results[x].GuID,
+                                id: "Button" + oDate,
                                 press: function (oEvent) {
                                     //Slice down the value for sId
                                     let oId = oEvent.getSource().sId.slice(6, 42);
@@ -319,7 +353,7 @@ sap.ui.define([
                                 value: "{ContentValue}",
                                 width: "100%",
                                 height: "450px",
-                                id: "Richtext" + oData.results[x].GuID
+                                id: "Richtext" + oDate
                             })
 
                             // Create binding path
@@ -335,9 +369,6 @@ sap.ui.define([
                             oView.byId("articleContent").insertItem(oDeleteButton);
                             oView.byId("articleContent").insertItem(oRichText);
                         }
-
-
-
                     }.bind(this),
                     error: function (oData) {
                         console.log("Error")
@@ -359,6 +390,36 @@ sap.ui.define([
                     }
                 });
                 oView.byId("articleContent").insertItem(addNewText);
+
+               
+                oView.getModel().read("/" + sPath + "/to_codeValue", {
+                    success: function (oData){
+                        for (let x = 0; x < oData.results.length; x++){
+                            let oEditor = new sap.ui.codeeditor.CodeEditor({
+                                value: "{CodeValue}",
+                                type: "{CodeType}",
+                                editable: false,
+                                width: "100%",
+                                height: "500px",
+                                id: "CodeEditor" + oData.results[x].GuID
+                            })
+
+                            //Create binding path
+                            const sCodePath = oView.getModel().createKey("CodeValue", {
+                                GuID: oData.results[x].GuID,
+                                ArticleGuID: oData.results[x].ArticleGuID
+                            });
+                            oEditor.bindElement("/" + sCodePath);
+
+                            oView.byId("articleCode").insertItem(oEditor);
+                        }
+                    }.bind(this),
+                    error: function (oData){
+                        console.log("Error")
+                    }
+                });
+
+
 
             },
 

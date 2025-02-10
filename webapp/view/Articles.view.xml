@@ -181,8 +181,8 @@
             <uxap:ObjectPageSection title="Code">
                 <uxap:subSections>
                     <uxap:ObjectPageSubSection title="Programming language">
-                        <VBox>
-                            <ComboBox
+                        <VBox id="articleCodeType">
+                            <!-- <ComboBox
                             value="{CodeType}"
                             editable="false"
                             ></ComboBox>
@@ -199,18 +199,20 @@
                                     key="{key}"
                                     text="{code}"
                                 />
-                            </ComboBox>
+                            </ComboBox> -->
                         </VBox>
                     </uxap:ObjectPageSubSection>
 
                     <uxap:ObjectPageSubSection title="Code">
-                        <editor:CodeEditor
+                    <VBox id="articleCode">
+                        <!-- <editor:CodeEditor
                             type="{CodeType}"
                             editable="false"
                             id="articleEditorId"
                             value="{Code}"
                             height="500px"
-                        />
+                        /> -->
+                        </VBox>
                     </uxap:ObjectPageSubSection>
                 </uxap:subSections>
             </uxap:ObjectPageSection>

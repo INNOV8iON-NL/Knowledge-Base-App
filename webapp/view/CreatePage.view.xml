@@ -334,6 +334,7 @@
                                 type="Default"
                                 class="sapUiSmallMarginRight"
                                 iconFirst="false"
+                                press=".onCreateNewCodeEditor"
                             />
                         </WizardStep>
 <!-- 

@@ -1,12 +1,12 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageBox",
-
     "sap/ui/richtexteditor/RichTextEditor",
-    "sap/ui/model/type/DateTime"
+    "sap/ui/model/type/DateTime",
+    "sap/ui/codeeditor/CodeEditor"
 
 ],
-    function (Controller, MessageBox, RichTextEditor, DateTime) {
+    function (Controller, MessageBox, RichTextEditor, DateTime, CodeEditor) {
         "use strict";
 
         return Controller.extend("articlesfreestyle.controller.Create", {
@@ -307,6 +307,20 @@ sap.ui.define([
                 this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 1);
                 this.getView().byId("wizardVBoxId").insertItem(oRichText, oIndex + 2);
             },
+
+            onCreateNewCodeEditor: function (){
+                let oVBoxContent = this.getView().byId("wizardVBoxId").getItems();
+                let oIndex = oVBoxContent.length;
+                let oDate = Date.now();
+
+                let oEditor = new CodeEditor({
+                    width: "100%",
+                    height: "450px",
+                    id: "codeEditorId" + oDate
+                });
+
+                this.getView().byId("wizardVBoxId").insertItem(oEditor, oIndex + 1);
+            }
 
         },
         );
