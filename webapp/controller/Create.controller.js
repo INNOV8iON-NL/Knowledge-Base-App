@@ -133,12 +133,17 @@ sap.ui.define([
                 const allTokens = this.getView().byId("multiInputId").getTokens();
                 const tokenTextArr = [];
                 let oAllContent = [];
+                let oAllCode = [];
+
 
                 for (let x = 0; x < oVBoxContent.length; x++) {
                     let oContentId = oVBoxContent[x].getId();
                     //Select Richtext editors from VBox items
                     if (oContentId.includes("richtextEditor")) {
                         oAllContent.push(oVBoxContent[x].getValue());
+                        //Select codeEditors from VBox items
+                    } else if (oContentId.includes("codeEditorId")) {
+                        oAllCode.push(oVBoxContent[x].getValue());
                     }
                 }
 
@@ -179,6 +184,12 @@ sap.ui.define([
                             this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", oAllContent[x]);
                             this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleGuID", articleGuid);
                         };
+
+                        for (let y = 0; y < oAllCode.length; y++){
+                            const oCodeEntry = this.getView().getModel().createEntry("/Articles(guid'" + articleGuid + "')" + "/to_codeValue");
+                            this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeValue", oAllCode[y]);
+                            this.getView().getModel().setProperty(oCodeEntry.getPath() + "/ArticleGuID", articleGuid);
+                        }
 
                         this.getView().getModel().submitChanges({
                             success: function (oData) {
@@ -282,10 +293,10 @@ sap.ui.define([
                 let oButton = new sap.m.Button({
                     text: "Delete textbox",
                     icon: "sap-icon://delete",
-                    id: "Button" + oDate,
+                    id: "ContButton" + oDate,
                     press: function(oEvent){
                         //Slice down the value for oDate
-                        let oId = oEvent.getSource().sId.slice(6, 19);
+                        let oId = oEvent.getSource().sId.slice(10, 23);
                         this.oView = oView;
                         let oElementsArr = oView.byId("wizardVBoxId");
                         let oElement = oElementsArr.getItems();
@@ -312,6 +323,27 @@ sap.ui.define([
                 let oVBoxContent = this.getView().byId("wizardVBoxId").getItems();
                 let oIndex = oVBoxContent.length;
                 let oDate = Date.now();
+                let oView = this.getView();
+
+                let oButton = new sap.m.Button({
+                    text: "Delete codeeditor",
+                    icon: "sap-icon://delete",
+                    id: "CodeButton" + oDate,
+                    press: function(oEvent){
+                        //Slice down the value for oDate
+                        let oId = oEvent.getSource().sId.slice(10, 23);
+                        this.oView = oView;
+                        let oElementsArr = oView.byId("wizardVBoxId");
+                        let oElement = oElementsArr.getItems();
+
+                        for (let x = 0; x < oElement.length; x++){
+                            //If Id contains oDate, remove from view
+                            if(oElement[x].sId.includes(oId)){
+                                oElementsArr.removeItem(oElement[x]);
+                            }
+                        }                    
+                    }
+                });
 
                 let oEditor = new CodeEditor({
                     width: "100%",
@@ -320,6 +352,8 @@ sap.ui.define([
                 });
 
                 this.getView().byId("wizardVBoxId").insertItem(oEditor, oIndex + 1);
+                this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 2);
+                
             }
 
         },

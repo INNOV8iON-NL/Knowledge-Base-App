@@ -144,7 +144,6 @@ sap.ui.define([
                     GuID: this.getView().getBindingContext().getObject().GuID,
                     Title: this.getView().byId("titleText").getValue,
                     Description: this.getView().byId("descText").getValue,
-                    Code: this.getView().byId("articleEditorId").getValue,
                 },
                     {
                         success: function (oData) {
@@ -198,6 +197,7 @@ sap.ui.define([
                     GuID: this.getView().getBindingContext().getObject().GuID
                 });
                 let sContentPath = "/" + sMainPath + "/to_contentValue";
+                let sCodePath = "/" + "/to_codeValue";
 
                 this.getView().byId("descText").setVisible(true);
                 this.getView().byId("descValue").setVisible(false);
@@ -210,7 +210,7 @@ sap.ui.define([
                 this.getView().byId("cancelButton").setVisible(false);
                 this._isEditing = false;
 
-                this.renderDisplayControls(sContentPath);
+                this.renderDisplayControls(sContentPath, sCodePath);
 
                 //Refresh window so possible modifications disappear
                 this.getView().getModel().resetChanges();
@@ -252,6 +252,8 @@ sap.ui.define([
                 this.getView().byId("articleContent").removeAllItems();
                 this.getView().byId("articleCode").removeAllItems();
                 this.getView().byId("articleCodeType").removeAllItems();
+                let oDate = Date.now();
+
 
                 // /Content(guid'xxx')
                 this.getView().getModel().read(sContentPath, {
@@ -316,6 +318,7 @@ sap.ui.define([
                 let oDate = Date.now();
 
                 let articleGuID = oView.getBindingContext().getObject().GuID;
+                let contentGuID = oView.getBindingContext().getObject();
 
                 let sPath = oView.getModel().createKey("Articles", {
                     GuID: articleGuID
@@ -326,6 +329,7 @@ sap.ui.define([
                     success: function (oData) {
                         for (let x = 0; x < oData.results.length; x++) {
 
+                           //DELELE BUTTON NEEDS REWORKING!     
                             let oDeleteButton = new sap.m.Button({
                                 text: "Delete textbox",
                                 icon: "sap-icon://delete",
@@ -398,7 +402,7 @@ sap.ui.define([
                             let oEditor = new sap.ui.codeeditor.CodeEditor({
                                 value: "{CodeValue}",
                                 type: "{CodeType}",
-                                editable: false,
+                                editable: true,
                                 width: "100%",
                                 height: "500px",
                                 id: "CodeEditor" + oData.results[x].GuID
@@ -418,11 +422,7 @@ sap.ui.define([
                         console.log("Error")
                     }
                 });
-
-
-
             },
-
         });
     });
 
