@@ -315,8 +315,9 @@ sap.ui.define([
                     height: "450px",
                     id:  "richtextEditorId" + oDate
                 });
-                this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 1);
-                this.getView().byId("wizardVBoxId").insertItem(oRichText, oIndex + 2);
+                
+                this.getView().byId("wizardVBoxId").insertItem(oRichText, oIndex + 1);
+                this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 2);
             },
 
             onCreateNewCodeEditor: function (){
@@ -324,6 +325,36 @@ sap.ui.define([
                 let oIndex = oVBoxContent.length;
                 let oDate = Date.now();
                 let oView = this.getView();
+
+                 let oCode = new sap.m.ComboBox({
+                    id: "CodeTypeId",
+                    placeholder: "Choose programming language",
+                    items: {
+                        path: "/codeCollection",
+                        template: new sap.ui.core.Item({
+                            key: "{key}",
+                            text: "{code}"
+                        })
+                    }
+            });
+
+            //Set value help with code options
+            let oModel = new sap.ui.model.json.JSONModel();
+            oModel.loadData("model/codecollection.json");
+            oCode.setModel(oModel);
+
+                    
+                let oEditor = new CodeEditor({
+                    width: "100%",
+                    height: "450px",
+                    id: "codeEditorId" + oDate                   
+                });
+
+                oCode.attachChange(function (oEvent){
+                    let oSelectedItem = oCode.getSelectedItem();
+                    let sItemText = oSelectedItem.getText();
+                    oEditor.setType(sItemText);
+                });
 
                 let oButton = new sap.m.Button({
                     text: "Delete codeeditor",
@@ -345,17 +376,10 @@ sap.ui.define([
                     }
                 });
 
-                let oEditor = new CodeEditor({
-                    width: "100%",
-                    height: "450px",
-                    id: "codeEditorId" + oDate
-                });
-
-                this.getView().byId("wizardVBoxId").insertItem(oEditor, oIndex + 1);
-                this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 2);
-                
-            }
-
+                this.getView().byId("wizardVBoxId").insertItem(oCode, oIndex + 1)
+                this.getView().byId("wizardVBoxId").insertItem(oEditor, oIndex + 2);
+                this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 3);                
+            },
         },
         );
     });

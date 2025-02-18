@@ -56,7 +56,7 @@
                 persistencyKey="SmartTableAnalytical_Explored"
                 enableAutoBinding="true"
                 class="sapUiResponsiveContentPadding"
-                initiallyVisibleFields="Title,Description,CreatedBy,ChangedAt,Category"
+                initiallyVisibleFields="Title,Description,LastChangedAt,CreatedBy,Category"
                 requestAtLeastFields="GuID"
             >
                 <smartTable:customToolbar>
