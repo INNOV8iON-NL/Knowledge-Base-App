@@ -151,24 +151,7 @@
             >
                 <uxap:subSections>
                     <uxap:ObjectPageSubSection>
-                        <VBox id="articleContent">
-                            <!-- <rte:RichTextEditor
-                                id="richTextId"
-                                class="sapUiSmallMarginTop mceContentBody"
-                                editorType="TinyMCE6"
-                                customToolbar="true"
-                                showGroupClipboard="false"
-                                showGroupTextAlign="false"
-                                showGroupStructure="false"
-                                showGroupLink="false"
-                                showGroupFont="false"
-                                showGroupFontStyle="false"
-                                showGroupInsert="false"
-                                editable="false"
-                                height="500px"
-                                width="100%"
-                                value="{Content}"
-                            /> -->
+                        <VBox id="articleContent">                          
                         </VBox>
                     </uxap:ObjectPageSubSection>
                 </uxap:subSections>
@@ -180,38 +163,8 @@
 
             <uxap:ObjectPageSection title="Code">
                 <uxap:subSections>
-                    <uxap:ObjectPageSubSection title="Programming language">
-                        <VBox id="articleCodeType">
-                            <!-- <ComboBox
-                            value="{CodeType}"
-                            editable="false"
-                            ></ComboBox>
-                            <ComboBox
-                                id="articleCombobox"
-                                change=".selectChange"
-                                value="{CodeType}"
-                                visible="false"
-                                items="{
-					path: '/codeCollection'
-				}"
-                            >
-                                <core:Item
-                                    key="{key}"
-                                    text="{code}"
-                                />
-                            </ComboBox> -->
-                        </VBox>
-                    </uxap:ObjectPageSubSection>
-
                     <uxap:ObjectPageSubSection title="Code">
-                    <VBox id="articleCode">
-                        <!-- <editor:CodeEditor
-                            type="{CodeType}"
-                            editable="false"
-                            id="articleEditorId"
-                            value="{Code}"
-                            height="500px"
-                        /> -->
+                    <VBox id="articleCode" >
                         </VBox>
                     </uxap:ObjectPageSubSection>
                 </uxap:subSections>

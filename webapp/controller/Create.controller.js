@@ -143,10 +143,11 @@ sap.ui.define([
                         aContent.push(oVBoxContent[x].getValue());
                         //Select codeEditor + type from VBox items
                     } else if (oContentId.includes("codeEditorId")) {
-                        let code = oVBoxContent[x].getValue();
+                       
                         let type = oVBoxContent[x].getType();
+                        let code = oVBoxContent[x].getValue();
                         //push to array as 2. array to keep them together
-                        aCode.push([code, type]);
+                        aCode.push([type, code]);
                     }
                 }
 
@@ -190,8 +191,8 @@ sap.ui.define([
 
                         for (let y = 0; y < aCode.length; y++){
                             const oCodeEntry = this.getView().getModel().createEntry("/Articles(guid'" + articleGuid + "')" + "/to_codeValue");
-                            this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeValue", aCode[y][0]);
-                            this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeType", aCode[y][1]);
+                            this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeType", aCode[y][0]);
+                            this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeValue", aCode[y][1]);
                             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/ArticleGuID", articleGuid);
                         };
 
@@ -347,7 +348,6 @@ sap.ui.define([
                 let oModel = new sap.ui.model.json.JSONModel();
                 oModel.loadData("model/codecollection.json");
                 oCode.setModel(oModel);
-
 
                 let oEditor = new CodeEditor({
                     width: "100%",
