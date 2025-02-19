@@ -43,7 +43,7 @@ sap.ui.define([
                 //     path: "/" + sPath + "/to_content"
                 // })
 
-             
+
                 oView.byId("multiInputId").removeAllTokens();
                 this.resetWizard();
                 //this.onCreateNewRichText();
@@ -132,18 +132,21 @@ sap.ui.define([
                 let oVBoxContent = this.getView().byId("wizardVBoxId").getItems();
                 const allTokens = this.getView().byId("multiInputId").getTokens();
                 const tokenTextArr = [];
-                let oAllContent = [];
-                let oAllCode = [];
+                let aContent = [];
+                let aCode = [];
 
 
                 for (let x = 0; x < oVBoxContent.length; x++) {
                     let oContentId = oVBoxContent[x].getId();
                     //Select Richtext editors from VBox items
                     if (oContentId.includes("richtextEditor")) {
-                        oAllContent.push(oVBoxContent[x].getValue());
-                        //Select codeEditors from VBox items
+                        aContent.push(oVBoxContent[x].getValue());
+                        //Select codeEditor + type from VBox items
                     } else if (oContentId.includes("codeEditorId")) {
-                        oAllCode.push(oVBoxContent[x].getValue());
+                        let code = oVBoxContent[x].getValue();
+                        let type = oVBoxContent[x].getType();
+                        //push to array as 2. array to keep them together
+                        aCode.push([code, type]);
                     }
                 }
 
@@ -179,17 +182,19 @@ sap.ui.define([
                         };
 
                         //Create entry for Content
-                        for (let x = 0; x < oAllContent.length; x++) {
+                        for (let x = 0; x < aContent.length; x++) {
                             const oContentEntry = this.getView().getModel().createEntry("/Articles(guid'" + articleGuid + "')" + "/to_contentValue");
-                            this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", oAllContent[x]);
+                            this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", aContent[x]);
                             this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleGuID", articleGuid);
                         };
 
-                        for (let y = 0; y < oAllCode.length; y++){
+                        for (let y = 0; y < aCode.length; y++){
                             const oCodeEntry = this.getView().getModel().createEntry("/Articles(guid'" + articleGuid + "')" + "/to_codeValue");
-                            this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeValue", oAllCode[y]);
+                            this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeValue", aCode[y][0]);
+                            this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeType", aCode[y][1]);
                             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/ArticleGuID", articleGuid);
-                        }
+                        };
+
 
                         this.getView().getModel().submitChanges({
                             success: function (oData) {
@@ -294,40 +299,40 @@ sap.ui.define([
                     text: "Delete textbox",
                     icon: "sap-icon://delete",
                     id: "ContButton" + oDate,
-                    press: function(oEvent){
+                    press: function (oEvent) {
                         //Slice down the value for oDate
                         let oId = oEvent.getSource().sId.slice(10, 23);
                         this.oView = oView;
                         let oElementsArr = oView.byId("wizardVBoxId");
                         let oElement = oElementsArr.getItems();
 
-                        for (let x = 0; x < oElement.length; x++){
+                        for (let x = 0; x < oElement.length; x++) {
                             //If Id contains oDate, remove from view
-                            if(oElement[x].sId.includes(oId)){
+                            if (oElement[x].sId.includes(oId)) {
                                 oElementsArr.removeItem(oElement[x]);
                             }
-                        }                    
+                        }
                     }
                 });
 
                 let oRichText = new RichTextEditor({
                     width: "100%",
                     height: "450px",
-                    id:  "richtextEditorId" + oDate
+                    id: "richtextEditorId" + oDate
                 });
-                
+
                 this.getView().byId("wizardVBoxId").insertItem(oRichText, oIndex + 1);
                 this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 2);
             },
 
-            onCreateNewCodeEditor: function (){
+            onCreateNewCodeEditor: function () {
                 let oVBoxContent = this.getView().byId("wizardVBoxId").getItems();
                 let oIndex = oVBoxContent.length;
                 let oDate = Date.now();
                 let oView = this.getView();
 
-                 let oCode = new sap.m.ComboBox({
-                    id: "CodeTypeId",
+                let oCode = new sap.m.ComboBox({
+                    id: "CodeTypeId" + oDate,
                     placeholder: "Choose programming language",
                     items: {
                         path: "/codeCollection",
@@ -336,21 +341,21 @@ sap.ui.define([
                             text: "{code}"
                         })
                     }
-            });
+                });
 
-            //Set value help with code options
-            let oModel = new sap.ui.model.json.JSONModel();
-            oModel.loadData("model/codecollection.json");
-            oCode.setModel(oModel);
+                //Set value help with code options
+                let oModel = new sap.ui.model.json.JSONModel();
+                oModel.loadData("model/codecollection.json");
+                oCode.setModel(oModel);
 
-                    
+
                 let oEditor = new CodeEditor({
                     width: "100%",
                     height: "450px",
-                    id: "codeEditorId" + oDate                   
+                    id: "codeEditorId" + oDate
                 });
 
-                oCode.attachChange(function (oEvent){
+                oCode.attachChange(function (oEvent) {
                     let oSelectedItem = oCode.getSelectedItem();
                     let sItemText = oSelectedItem.getText();
                     oEditor.setType(sItemText);
@@ -360,25 +365,25 @@ sap.ui.define([
                     text: "Delete codeeditor",
                     icon: "sap-icon://delete",
                     id: "CodeButton" + oDate,
-                    press: function(oEvent){
+                    press: function (oEvent) {
                         //Slice down the value for oDate
                         let oId = oEvent.getSource().sId.slice(10, 23);
                         this.oView = oView;
                         let oElementsArr = oView.byId("wizardVBoxId");
                         let oElement = oElementsArr.getItems();
 
-                        for (let x = 0; x < oElement.length; x++){
+                        for (let x = 0; x < oElement.length; x++) {
                             //If Id contains oDate, remove from view
-                            if(oElement[x].sId.includes(oId)){
+                            if (oElement[x].sId.includes(oId)) {
                                 oElementsArr.removeItem(oElement[x]);
                             }
-                        }                    
+                        }
                     }
                 });
 
                 this.getView().byId("wizardVBoxId").insertItem(oCode, oIndex + 1)
                 this.getView().byId("wizardVBoxId").insertItem(oEditor, oIndex + 2);
-                this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 3);                
+                this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 3);
             },
         },
         );
