@@ -139,14 +139,15 @@ sap.ui.define([
                 let requiredInputs = this.returnIdListOfRequiredFields();
                 let passedValidation = this.validateEventFeedbackForm(requiredInputs);
                 let aContent = this.getView().byId("articleContent").getItems();
+                let aCode = this.getView().byId("articleCode").getItems();
 
                 if (passedValidation === false) {
                     //show an error message, rest of code will not execute.
                     return false;
-                }              
+                }
 
                 //permanently remove items coming from deleteFromButton function 
-                for(let y = 0; y < this.itemsToDelete.length; y++){
+                for (let y = 0; y < this.itemsToDelete.length; y++) {
                     this.getView().getModel().remove("/ContentValue(GuID=guid'" + this.itemsToDelete[y].sId + "',ArticleGuID=guid'" + sGuID + "')");
                 }
 
@@ -157,6 +158,16 @@ sap.ui.define([
                         const oContentEntry = this.getView().getModel().createEntry("/Articles(guid'" + sGuID + "')" + "/to_contentValue");
                         this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", aContent[x].getValue());
                         this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleGuID", sGuID)
+                    }
+                }
+
+                for (let z = 0; z < aCode.length; z++){
+                    let sId = aCode[z].sId;
+                    if (sId.includes("CodeToSend")){
+                        const oCodeEntry = this.getView().getModel().createEntry("/Articles(guid'" + sGuID + "')" + "/to_codeValue");
+                        this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeValue", aCode[z].getValue());
+                        this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeType", aCode[z].getType());
+                        this.getView().getModel().setProperty(oCodeEntry.getPath() + "/ArticleGuID", sGuID)
                     }
                 }
 
@@ -452,6 +463,46 @@ sap.ui.define([
                     }
                 });
 
+                let oNewCodeButton = new sap.m.Button({
+                    text: "Add new codeeditor",
+                    icon: "sap-icon://add",
+                    press: function () {
+                        let oCode = new sap.m.ComboBox({
+                            id: "CodeTypeId" + Date.now(),
+                            placeholder: "Choose programming language",
+                            items: {
+                                path: "/codeCollection",
+                                template: new sap.ui.core.Item({
+                                    key: "{key}",
+                                    text: "{code}"
+                                })
+                            }
+                        });
+                        let oCodeEditor = new sap.ui.codeeditor.CodeEditor({
+                            width: "100%",
+                            height: "500px",
+                            id: "CodeToSend" + Date.now()
+                        });
+
+                        let oVBoxContent = oView.byId("articleCode").getItems();
+                        let oIndex = oVBoxContent.length;
+                        let oModel = new sap.ui.model.json.JSONModel();
+                        oModel.loadData("model/codecollection.json");
+                        oModel.setSizeLimit(160);
+                        oCode.setModel(oModel);
+                        oView.byId("articleCode").insertItem(oCode, oIndex + 1);
+                        oView.byId("articleCode").insertItem(oCodeEditor, oIndex + 2);
+
+                        oCode.attachChange(function (oEvent) {
+                            let oSelectedItem = oCode.getSelectedItem();
+                            let sItemText = oSelectedItem.getText();
+                            oCodeEditor.setType(sItemText);
+                        });        
+                    }
+                });
+
+                oView.byId("articleCode").insertItem(oNewCodeButton);
+
                 oView.getModel().read("/" + sPath + "/to_codeValue", {
                     success: function (oData) {
                         for (let y = 0; y < oData.results.length; y++) {
@@ -470,6 +521,7 @@ sap.ui.define([
                             //Set value help with code options
                             let oModel = new sap.ui.model.json.JSONModel();
                             oModel.loadData("model/codecollection.json");
+                            oModel.setSizeLimit(160);
                             oType.setModel(oModel);
                             oType.setValue(oData.results[y].CodeType);
                             oType.attachChange(function (oEvent) {

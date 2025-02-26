@@ -347,6 +347,7 @@ sap.ui.define([
                 //Set value help with code options
                 let oModel = new sap.ui.model.json.JSONModel();
                 oModel.loadData("model/codecollection.json");
+                oModel.setSizeLimit(160);
                 oCode.setModel(oModel);
 
                 let oEditor = new CodeEditor({
