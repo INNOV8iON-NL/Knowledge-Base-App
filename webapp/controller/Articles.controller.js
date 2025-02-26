@@ -24,6 +24,9 @@ sap.ui.define([
                 oModel.setSizeLimit(200);
                 oModel.loadData("model/codecollection.json");
                 // this.getView().byId("articleCombobox").setModel(oModel);
+
+                //Array to collect items to be deleted
+                this.itemsToDelete = [];
             },
 
             getRouter: function () {
@@ -130,16 +133,27 @@ sap.ui.define([
             },
 
             onSaveChanges: function (oEvent) {
-                this._isValid = true;
+                //this._isValid = true;
                 const sGuID = this.getView().getBindingContext().getObject().GuID;
                 const sPath = `/Articles(guid'${sGuID}')`;
                 let requiredInputs = this.returnIdListOfRequiredFields();
                 let passedValidation = this.validateEventFeedbackForm(requiredInputs);
+                let aContent = this.getView().byId("articleContent").getItems();
+
+                // for (let x = 0; x < aContent.length; x++){
+                //     let 
+                // }
 
                 if (passedValidation === false) {
                     //show an error message, rest of code will not execute.
                     return false;
                 }
+
+                //permanently remove items coming from deleteFromButton function 
+                for(let y = 0; y < this.itemsToDelete.length; y++){
+                    this.getView().getModel().remove("/ContentValue(GuID=guid'" + this.itemsToDelete[y].sId + "',ArticleGuID=guid'" + this.itemsToDelete[y].articleGuID + "')");
+                }
+
                 const oContext = this.getView().getModel().update(sPath, {
                     GuID: this.getView().getBindingContext().getObject().GuID,
                     Title: this.getView().byId("titleText").getValue,
@@ -159,7 +173,14 @@ sap.ui.define([
                         }
                     }
                 )
-                this.getView().getModel().submitChanges();
+                this.getView().getModel().submitChanges({
+                    success: function (oData) {
+
+                    }.bind(this),
+                    error: function (oData) {
+                        console.log("Something went wrong.");
+                    }.bind(this)
+                });
             },
 
             returnIdListOfRequiredFields: function () {
@@ -190,6 +211,8 @@ sap.ui.define([
                 return valid;
             },
 
+
+
             //----------------- Cancel edit ------------------------- 
 
             onCancel: function (oEvent) {
@@ -197,7 +220,7 @@ sap.ui.define([
                     GuID: this.getView().getBindingContext().getObject().GuID
                 });
                 let sContentPath = "/" + sMainPath + "/to_contentValue";
-                let sCodePath = "/" + "/to_codeValue";
+                let sCodePath = "/" + sMainPath + "/to_codeValue";
 
                 this.getView().byId("descText").setVisible(true);
                 this.getView().byId("descValue").setVisible(false);
@@ -252,8 +275,6 @@ sap.ui.define([
                 let oView = this.getView();
                 oView.byId("articleContent").removeAllItems();
                 oView.byId("articleCode").removeAllItems();
-                // let oDate = Date.now();
-
 
                 // /Content(guid'xxx')
                 this.getView().getModel().read(sContentPath, {
@@ -327,11 +348,33 @@ sap.ui.define([
                 })
             },
 
+            deleteFromButton: function (oEvent, articleGuID) {
+                let item = {
+                    //slice everything from ID that is not the GuID
+                    sId: oEvent.getSource().getId().slice(14),
+                    articleGuID: articleGuID
+                }
+                //push to itemsToDelete for later use in onSaveChanges function
+                this.itemsToDelete.push(item);
+
+                //Slice everything from the ID that is not GuID
+                let sContentId =  oEvent.getSource().getId().slice(14);
+                let oElementsArr = this.getView().byId("articleContent");
+                let oElement = oElementsArr.getItems();
+
+                //only remove item from frontend view 
+                for (let x = 0; x < oElement.length; x++) {
+                    if(oElement[x].sId.includes(sContentId)) {
+                        oElementsArr.removeItem(oElement[x]);
+                    }
+                }
+            },
+
             renderEditControls: function () {
                 let oView = this.getView();
+
                 oView.byId("articleContent").removeAllItems();
                 oView.byId("articleCode").removeAllItems();
-                let oDate = Date.now();
 
                 let contentGuID = oView.getBindingContext().getObject().GuID;
                 let sPath = oView.getModel().createKey("Articles", {
@@ -346,7 +389,10 @@ sap.ui.define([
                             width: "100%",
                             height: "450px"
                         });
-                        oView.byId("articleContent").insertItem(oRichText);
+
+                        let oVBoxContent = oView.byId("articleContent").getItems();
+                        let oIndex = oVBoxContent.length;
+                        oView.byId("articleContent").insertItem(oRichText, oIndex + 1);
                     }
                 });
 
@@ -357,37 +403,21 @@ sap.ui.define([
                     success: function (oData) {
                         for (let x = 0; x < oData.results.length; x++) {
 
-                            //This one still needs binding
+                            //Declaring oDate here makes sure it is recalculated in every loop
+                            let oDate = Date.now();
                             let oRichText = new RichTextEditor({
                                 value: "{ContentValue}",
                                 width: "100%",
                                 height: "450px",
-                                id: "Richtext" + oData.results[x].GuID
+                                id: "Richtext" + oData.results[x].GuID + oDate
                             });
 
                             let oDeleteButton = new sap.m.Button({
                                 text: "Delete textbox",
                                 icon: "sap-icon://delete",
                                 //GuID alone is invalid id
-                                id: "b" + oData.results[x].GuID,
-                                press: function (oEvent) {
-                                    let oIdLong = oEvent.getSource().sId;
-                                    //slice off the b from button id
-                                    let oId = oIdLong.substring(1);
-                                    this.contentGuID = contentGuID;
-                                    this.oView = oView;
-                                    this.sPath = sPath;
-                                    let oElementsArr = oView.byId("articleContent");
-                                    let oElement = oElementsArr.getItems();
-                                    for (let x = 0; x < oElement.length; x++) {
-                                        //If Id contains sId, remove from view + delete from database
-                                        if (oElement[x].sId.includes(oId)) {
-                                            oView.getModel().remove("/ContentValue(GuID=guid'" + oId + "',ArticleGuID=guid'" + contentGuID + "')");
-                                            oElementsArr.removeItem(oElement[x]);
-                                        }
-                                    }
-                                }
-                            });
+                                id: "b" + oDate + oData.results[x].GuID,
+                            })
 
                             // Create binding path
                             const sContentPath = oView.getModel().createKey("ContentValue", {
@@ -402,9 +432,12 @@ sap.ui.define([
                             let oVBoxContent = oView.byId("articleContent").getItems();
                             let oIndex = oVBoxContent.length;
 
-
                             oView.byId("articleContent").insertItem(oRichText, oIndex + 1);
                             oView.byId("articleContent").insertItem(oDeleteButton, oIndex + 2);
+                            //attach the delete function
+                            oDeleteButton.attachPress(function (oEvent) {
+                                this.deleteFromButton(oEvent, oData.results[x].ArticleGuID);
+                            }, this);
                         }
                     }.bind(this),
                     error: function (oData) {
@@ -418,6 +451,7 @@ sap.ui.define([
 
                             let oType = new sap.m.ComboBox({
                                 items: {
+                                    //template is based on codecollection.json
                                     path: "/codeCollection",
                                     template: new sap.ui.core.Item({
                                         key: "{key}",
@@ -431,7 +465,11 @@ sap.ui.define([
                             oModel.loadData("model/codecollection.json");
                             oType.setModel(oModel);
                             oType.setValue(oData.results[y].CodeType);
-
+                            oType.attachChange(function (oEvent) {
+                                let oSelectedItem = oType.getSelectedItem();
+                                let sItemText = oSelectedItem.getText();
+                                oEditor.setType(sItemText);
+                            });
 
                             let oEditor = new sap.ui.codeeditor.CodeEditor({
                                 value: "{CodeValue}",
@@ -439,7 +477,6 @@ sap.ui.define([
                                 width: "100%",
                                 height: "500px"
                             });
-
 
                             const sCodePath = oView.getModel().createKey("CodeValue", {
                                 GuID: oData.results[y].GuID,
@@ -461,143 +498,37 @@ sap.ui.define([
                     error: function (oData) {
                         console.log(oData.error);
                     }
-                })
+                });
             },
         });
     });
 
-// onDelete: function (oEvent) {
-//     const oTable = this.getView().byId("innerTableId");
-//     const aSelectedItems = oTable.getSelectedItems();
 
-//     for (let i = 0; i < aSelectedItems.length; i++) {
+    //DeleteButton old solution
+    // let oDeleteButton = new sap.m.Button({
+    //     text: "Delete textbox",
+    //     icon: "sap-icon://delete",
+        //GuID alone is invalid id
+        // id: "b" + oDate + oData.results[x].GuID,
+        //press:
+        // function (oEvent) {
+        //     let oIdLong = oEvent.getSource().sId;
+        //     //slice off the b from button id
+        //     let oId = oIdLong.slice(14);
+        //     this.contentGuID = contentGuID;
+        //     this.oView = oView;
+        //     this.sPath = sPath;
+        //     let oElementsArr = oView.byId("articleContent");
+        //     let oElement = oElementsArr.getItems();
+        //     for (let x = 0; x < oElement.length; x++) {
+        //         //If Id contains sId, remove from view + delete from database
+        //         if (oElement[x].sId.includes(oId)) {
+        //             //Only removes item from frontend
+        //             oElementsArr.removeItem(oElement[x]);
+        //             itemsToDelete.push(oElement[x]);
 
-//         const oContext = aSelectedItems[i].getBindingContext();
-//         const sPath = oContext.getPath();
-//         const sTitle = oContext.getObject().Title;
-
-//         MessageBox.warning("Article '" + sTitle + "' will be deleted.", {
-//             actions: ["Delete", MessageBox.Action.CANCEL],
-//             emphasizedAction: "Delete",
-//             onClose: function (sAction) {
-//                 if (sAction == "Delete") {
-//                     this.getView().getModel().remove(sPath);
-//                 } else {
-//                     return;
-//                 }
-//             }.bind(this),
-//             dependentOn: this.getView()
-//         })
-//         this.getView().getModel().submitChanges();
-//     }
-// },
-
-// let oButton = new sap.m.Button({
-//     text: "Delete textbox",
-//     icon: "sap-icon://delete",
-//     id: "Button" + oDate,
-//     press: function(oEvent){
-//         //Slice down the value for oDate
-//         let oId = oEvent.getSource().sId.slice(6, 19);
-//         this.oView = oView;
-//         let oElementsArr = oView.byId("wizardVBoxId");
-//         let oElement = oElementsArr.getItems();
-
-//         for (let x = 0; x < oElement.length; x++){
-//             //If Id contains oDate, remove from view
-//             if(oElement[x].sId.includes(oId)){
-//                 oElementsArr.removeItem(oElement[x]);
-//             }
-//         }
-//     }
-
-// let contentGuID = oView.getBindingContext().getObject().GuID;
-// let sPath = oView.getModel().createKey("Articles", {
-//     GuID: contentGuID
-// });
-
-
-// oView.getModel().read("/" + sPath + "/to_contentValue", {
-//     success: function (oData) {
-//         for (let x = 0; x < oData.results.length; x++) {
-
-//            //DELELE BUTTON NEEDS REWORKING!
-//             let oDeleteButton = new sap.m.Button({
-//                 text: "Delete textbox",
-//                 icon: "sap-icon://delete",
-//                 id: "Button" + oDate + contentGuID,
-//                 press: function (oEvent) {
-//                     // //Slice down the value for sId
-//                     // let oId = oEvent.getSource().sId.slice(6, 42);
-//                     // this.oView = oView;
-//                     // this.sPath = sPath;
-//                     // this.articleGuID = articleGuID;
-//                     // let oElementsArr = oView.byId("articleContent");
-//                     // let oElement = oElementsArr.getItems();
-
-//                     // for (let x = 0; x < oElement.length; x++) {
-//                     //     //If Id contains sId, remove from view + delete from database
-//                     //     if (oElement[x].sId.includes(oId)) {
-//                     //         oView.getModel().remove("/ContentValue(GuID=guid'" + oId + "',ArticleGuID=guid'" + articleGuID + "')");
-//                     //         oElementsArr.removeItem(oElement[x]);
-//                     //     }
-//                     // }
-//                 }
-//             })
-
-//             let oRichText = new RichTextEditor({
-//                 value: "{ContentValue}",
-//                 width: "100%",
-//                 height: "450px",
-//                 id: "Richtext" + oDate
-//             })
-
-//             // Create binding path
-//             const sContentPath = oView.getModel().createKey("ContentValue", {
-//                 GuID: oData.results[x].GuID,
-//                 ArticleGuID: oData.results[x].ArticleGuID
-//             });
-
-//             // Bind formatted text to content path
-//             oRichText.bindElement("/" + sContentPath);
-
-//             // Add formatted text to vbox
-//             oView.byId("articleContent").insertItem(oDeleteButton);
-//             oView.byId("articleContent").insertItem(oRichText);
-//         }
-//     }.bind(this),
-//     error: function (oData) {
-//         console.log("Error")
-//     }
-// });
-
-
-// oView.byId("articleContent").insertItem(addNewText);
-
-
-// oView.getModel().read("/" + sPath + "/to_codeValue", {
-//     success: function (oData){
-//         for (let x = 0; x < oData.results.length; x++){
-//             let oEditor = new sap.ui.codeeditor.CodeEditor({
-//                 value: "{CodeValue}",
-//                 type: "{CodeType}",
-//                 editable: true,
-//                 width: "100%",
-//                 height: "500px",
-//                 id: "CodeEditor" + oData.results[x].GuID
-//             })
-
-//             //Create binding path
-//             const sCodePath = oView.getModel().createKey("CodeValue", {
-//                 GuID: oData.results[x].GuID,
-//                 ArticleGuID: oData.results[x].ArticleGuID
-//             });
-//             oEditor.bindElement("/" + sCodePath);
-
-//             oView.byId("articleCode").insertItem(oEditor);
-//         }
-//     }.bind(this),
-//     error: function (oData){
-//         console.log("Error")
-//     }
-// });
+        //             // oView.getModel().remove("/ContentValue(GuID=guid'" + oId + "',ArticleGuID=guid'" + contentGuID + "')");
+        //         }
+        //     }
+        // }
+    //})
