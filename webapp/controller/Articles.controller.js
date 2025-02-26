@@ -140,18 +140,24 @@ sap.ui.define([
                 let passedValidation = this.validateEventFeedbackForm(requiredInputs);
                 let aContent = this.getView().byId("articleContent").getItems();
 
-                // for (let x = 0; x < aContent.length; x++){
-                //     let 
-                // }
-
                 if (passedValidation === false) {
                     //show an error message, rest of code will not execute.
                     return false;
-                }
+                }              
 
                 //permanently remove items coming from deleteFromButton function 
                 for(let y = 0; y < this.itemsToDelete.length; y++){
-                    this.getView().getModel().remove("/ContentValue(GuID=guid'" + this.itemsToDelete[y].sId + "',ArticleGuID=guid'" + this.itemsToDelete[y].articleGuID + "')");
+                    this.getView().getModel().remove("/ContentValue(GuID=guid'" + this.itemsToDelete[y].sId + "',ArticleGuID=guid'" + sGuID + "')");
+                }
+
+                //create new entries for new content
+                for (let x = 0; x < aContent.length; x++) {
+                    let sId = aContent[x].sId;
+                    if (sId.includes("RichtextToSend")) {
+                        const oContentEntry = this.getView().getModel().createEntry("/Articles(guid'" + sGuID + "')" + "/to_contentValue");
+                        this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", aContent[x].getValue());
+                        this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleGuID", sGuID)
+                    }
                 }
 
                 const oContext = this.getView().getModel().update(sPath, {
@@ -358,13 +364,13 @@ sap.ui.define([
                 this.itemsToDelete.push(item);
 
                 //Slice everything from the ID that is not GuID
-                let sContentId =  oEvent.getSource().getId().slice(14);
+                let sContentId = oEvent.getSource().getId().slice(14);
                 let oElementsArr = this.getView().byId("articleContent");
                 let oElement = oElementsArr.getItems();
 
                 //only remove item from frontend view 
                 for (let x = 0; x < oElement.length; x++) {
-                    if(oElement[x].sId.includes(sContentId)) {
+                    if (oElement[x].sId.includes(sContentId)) {
                         oElementsArr.removeItem(oElement[x]);
                     }
                 }
@@ -381,14 +387,17 @@ sap.ui.define([
                     GuID: contentGuID
                 });
 
+
                 let oNewContentButton = new sap.m.Button({
                     text: "Add new textbox",
                     icon: "sap-icon://add",
                     press: function () {
                         let oRichText = new RichTextEditor({
                             width: "100%",
-                            height: "450px"
+                            height: "450px",
+                            id: "RichtextToSend" + Date.now()
                         });
+
 
                         let oVBoxContent = oView.byId("articleContent").getItems();
                         let oIndex = oVBoxContent.length;
@@ -403,20 +412,18 @@ sap.ui.define([
                     success: function (oData) {
                         for (let x = 0; x < oData.results.length; x++) {
 
-                            //Declaring oDate here makes sure it is recalculated in every loop
-                            let oDate = Date.now();
                             let oRichText = new RichTextEditor({
                                 value: "{ContentValue}",
                                 width: "100%",
                                 height: "450px",
-                                id: "Richtext" + oData.results[x].GuID + oDate
+                                id: "Richtext" + oData.results[x].GuID + Date.now()
                             });
 
                             let oDeleteButton = new sap.m.Button({
                                 text: "Delete textbox",
                                 icon: "sap-icon://delete",
                                 //GuID alone is invalid id
-                                id: "b" + oDate + oData.results[x].GuID,
+                                id: "b" + Date.now() + oData.results[x].GuID,
                             })
 
                             // Create binding path
@@ -504,31 +511,31 @@ sap.ui.define([
     });
 
 
-    //DeleteButton old solution
-    // let oDeleteButton = new sap.m.Button({
-    //     text: "Delete textbox",
-    //     icon: "sap-icon://delete",
-        //GuID alone is invalid id
-        // id: "b" + oDate + oData.results[x].GuID,
-        //press:
-        // function (oEvent) {
-        //     let oIdLong = oEvent.getSource().sId;
-        //     //slice off the b from button id
-        //     let oId = oIdLong.slice(14);
-        //     this.contentGuID = contentGuID;
-        //     this.oView = oView;
-        //     this.sPath = sPath;
-        //     let oElementsArr = oView.byId("articleContent");
-        //     let oElement = oElementsArr.getItems();
-        //     for (let x = 0; x < oElement.length; x++) {
-        //         //If Id contains sId, remove from view + delete from database
-        //         if (oElement[x].sId.includes(oId)) {
-        //             //Only removes item from frontend
-        //             oElementsArr.removeItem(oElement[x]);
-        //             itemsToDelete.push(oElement[x]);
+//DeleteButton old solution
+// let oDeleteButton = new sap.m.Button({
+//     text: "Delete textbox",
+//     icon: "sap-icon://delete",
+//GuID alone is invalid id
+// id: "b" + oDate + oData.results[x].GuID,
+//press:
+// function (oEvent) {
+//     let oIdLong = oEvent.getSource().sId;
+//     //slice off the b from button id
+//     let oId = oIdLong.slice(14);
+//     this.contentGuID = contentGuID;
+//     this.oView = oView;
+//     this.sPath = sPath;
+//     let oElementsArr = oView.byId("articleContent");
+//     let oElement = oElementsArr.getItems();
+//     for (let x = 0; x < oElement.length; x++) {
+//         //If Id contains sId, remove from view + delete from database
+//         if (oElement[x].sId.includes(oId)) {
+//             //Only removes item from frontend
+//             oElementsArr.removeItem(oElement[x]);
+//             itemsToDelete.push(oElement[x]);
 
-        //             // oView.getModel().remove("/ContentValue(GuID=guid'" + oId + "',ArticleGuID=guid'" + contentGuID + "')");
-        //         }
-        //     }
-        // }
-    //})
+//             // oView.getModel().remove("/ContentValue(GuID=guid'" + oId + "',ArticleGuID=guid'" + contentGuID + "')");
+//         }
+//     }
+// }
+//})
