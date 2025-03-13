@@ -51,7 +51,7 @@
                     <Button
                         text="Cancel"
                         type="Default"
-                        press=".onCancel"
+                        press=".onBeforeCancel"
                         visible="false"
                         id="cancelButton"
                     />

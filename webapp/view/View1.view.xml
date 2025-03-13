@@ -10,7 +10,7 @@
 >
     <Page
         id="page"
-        class="knowledgeBaseApp"
+        class="knowledgeBaseApp sapUiContentPadding"
     >
         <content>
             <smartFilterBar:SmartFilterBar
@@ -55,8 +55,8 @@
                 showRowCount="true"
                 persistencyKey="SmartTableAnalytical_Explored"
                 enableAutoBinding="true"
-                class="sapUiResponsiveContentPadding"
-                initiallyVisibleFields="Title,LastChangedAt,CreatedBy,Category"
+                class="sapUiContentPadding"
+                initiallyVisibleFields="Title,LastChangedAt,CreatedBy,Description,Category"
                 requestAtLeastFields="GuID"
             >
                 <smartTable:customToolbar>
@@ -84,6 +84,18 @@
                     selectionChange=".onSelectionChange"
                 >
                     <columns>
+                    <Column
+                            id="Description"
+                            hAlign="Begin"
+                        >
+                            <customData>
+                                <core:CustomData
+                                    key="p13nData"
+                                    value='\{"columnKey": "Description", "columnIndex": "70"}'
+                                />
+                            </customData>
+                            <Text text="Description" />
+                        </Column>
                         <Column
                             id="Category"
                             hAlign="Begin"
@@ -96,16 +108,16 @@
                             </customData>
                             <Text text="Category" />
                         </Column>
-                        <Column id="Description">
-                        <Text text="Description" />
-                        </Column>
                     </columns>
                     <items>
                         <ColumnListItem
                             type="Navigation"
                             press=".onDetailPress"
                         >
-                            <cells>
+                        <cells>
+                           <ExpandableText text="{Description}" class="sapUiTinyMargin"></ExpandableText>
+                        </cells>
+                            <cells>                            
                                 <List
                                     id="tagListId"
                                     items="{ path: 'to_tags'}"
@@ -113,10 +125,9 @@
                                 >
                                     <DisplayListItem value="{TagName}" />
                                 </List>
-                                <ExpandableText text="{Description}" >                                
-                                </ExpandableText>
                             </cells>
                         </ColumnListItem>
+                       
                     </items>
                 </Table>
             </smartTable:SmartTable>

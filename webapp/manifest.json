@@ -1,178 +1,190 @@
 {
-    "_version": "1.53.0",
-    "sap.app": {
-        "id": "articlesfreestyle",
-        "type": "application",
-        "i18n": "i18n/i18n.properties",
-        "applicationVersion": {
-            "version": "0.0.1"
-        },
-        "title": "{{appTitle}}",
-        "description": "{{appDescription}}",
-        "resources": "resources.json",
-        "sourceTemplate": {
-            "id": "@sap/generator-fiori:basic",
-            "version": "1.14.1",
-            "toolsId": "92fc37d7-2dfa-4a03-a098-8f8d0003cfe9"
-        },
-        "dataSources": {
-            "mainService": {
-                "uri": "/sap/opu/odata/sap/ZKNOWLEDGE_UI_ARTICLES_O2/",
-                "type": "OData",
-                "settings": {
-                    "annotations": [
-                        "ZKNOWLEDGE_UI_ARTICLES_O2_VAN"
-                    ],
-                    "odataVersion": "2.0"
-                }
-            },
-            "ZKNOWLEDGE_UI_ARTICLES_O2_VAN": {
-                "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZKNOWLEDGE_UI_ARTICLES_O2_VAN',Version='0001')/$value/",
-                "type": "ODataAnnotation"
-            }
-        },
-        "crossNavigation": {
-            "inbounds": {
-                "articles-manage": {
-                    "semanticObject": "articles",
-                    "action": "manage",
-                    "title": "{{flpTitle}}",
-                    "signature": {
-                        "parameters": {},
-                        "additionalParameters": "allowed"
-                    }
-                }
-            }
-        }
+  "_version": "1.53.0",
+  "sap.app": {
+    "id": "articlesfreestyle",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
     },
-    "sap.ui": {
-        "technology": "UI5",
-        "fullWidth": true,
-        "icons": {
-            "icon": "",
-            "favIcon": "",
-            "phone": "",
-            "phone@2": "",
-            "tablet": "",
-            "tablet@2": ""
-        },
-        "deviceTypes": {
-            "desktop": true,
-            "tablet": true,
-            "phone": true
-        }
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.14.1",
+      "toolsId": "92fc37d7-2dfa-4a03-a098-8f8d0003cfe9"
     },
-    "sap.ui5": {
-        "flexEnabled": false,
-        "dependencies": {
-            "minUI5Version": "1.114.0",
-            "libs": {
-                "sap.m": {},
-                "sap.ui.core": {},
-                "sap.f": {},
-                "sap.suite.ui.generic.template": {},
-                "sap.ui.comp": {},
-                "sap.ui.generic.app": {},
-                "sap.ui.table": {},
-                "sap.ushell": {}
-            }
-        },
-        "contentDensities": {
-            "compact": true,
-            "cozy": true
-        },
-        "models": {
-            "i18n": {
-                "type": "sap.ui.model.resource.ResourceModel",
-                "settings": {
-                    "bundleName": "articlesfreestyle.i18n.i18n"
-                }
-            },
-            "": {
-                "dataSource": "mainService",
-                "preload": true,
-                "settings": {
-                    "defaultBindingMode": "TwoWay"
-                }
-            }
-        },
-        "resources": {
-            "css": [
-                {
-                    "uri": "css/style.css"
-                }
-            ]
-        },
-        "routing": {
-            "config": {
-                "routerClass": "sap.m.routing.Router",
-                "viewType": "XML",
-                "async": true,
-                "viewPath": "articlesfreestyle.view",
-                "controlAggregation": "pages",
-                "controlId": "app",
-                "clearControlAggregation": false,
-                "transition": "slide",
-                "bypassed": {
-                    "target": [
-                        "notFound"
-                    ]
-                }
-            },
-            "routes": [
-                {
-                    "name": "RouteView1",
-                    "pattern": ":?query:",
-                    "target": [
-                        "TargetView1"
-                    ]
-                },
-                {
-                    "name": "articles",
-                    "pattern": "Articles/:GuID:",
-                    "titleTarget": "",
-                    "greedy": false,
-                    "target": "articles"
-                },
-                {
-                    "name": "create",
-                    "pattern": "Create",
-                    "target": "create"
-                }
-            ],
-            "targets": {
-                "TargetView1": {
-                    "viewType": "XML",
-                    "transition": "slide",
-                    "clearControlAggregation": false,
-                    "viewId": "View1",
-                    "viewName": "View1",
-                    "viewLevel": 1
-                },
-                "articles": {
-                    "viewType": "XML",
-                    "transition": "slide",
-                    "viewName": "Articles",
-                    "viewLevel": 2
-                },
-                "create": {
-                    "viewType": "XML",
-                    "transition": "slide",
-                    "viewName": "CreatePage",
-                    "viewLevel": 3
-                },
-                "notFound": {
-                    "viewName": "NotFound",
-                    "transition": "show",
-                    "viewLevel": 0
-                }
-            }
-        },
-        "rootView": {
-            "viewName": "articlesfreestyle.view.App",
-            "type": "XML",
-            "async": true,
-            "id": "App"
+    "dataSources": {
+      "mainService": {
+        "uri": "/sap/opu/odata/sap/ZKNOWLEDGE_UI_ARTICLES_O2/",
+        "type": "OData",
+        "settings": {
+          "annotations": [
+            "ZKNOWLEDGE_UI_ARTICLES_O2_VAN",
+            "annotation0"
+          ],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "2.0"
         }
+      },
+      "ZKNOWLEDGE_UI_ARTICLES_O2_VAN": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZKNOWLEDGE_UI_ARTICLES_O2_VAN',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/mainService/ZKNOWLEDGE_UI_ARTICLES_O2_VAN.xml"
+        }
+      },
+      "annotation0": {
+        "type": "ODataAnnotation",
+        "uri": "annotations/annotation0.xml",
+        "settings": {
+          "localUri": "annotations/annotation0.xml"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "articles-manage": {
+          "semanticObject": "articles",
+          "action": "manage",
+          "title": "{{flpTitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
     }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "fullWidth": true,
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.114.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.f": {},
+        "sap.suite.ui.generic.template": {},
+        "sap.ui.comp": {},
+        "sap.ui.generic.app": {},
+        "sap.ui.table": {},
+        "sap.ushell": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "articlesfreestyle.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "defaultBindingMode": "TwoWay"
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "async": true,
+        "viewPath": "articlesfreestyle.view",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "clearControlAggregation": false,
+        "transition": "slide",
+        "bypassed": {
+          "target": [
+            "notFound"
+          ]
+        }
+      },
+      "routes": [
+        {
+          "name": "RouteView1",
+          "pattern": ":?query:",
+          "target": [
+            "TargetView1"
+          ]
+        },
+        {
+          "name": "articles",
+          "pattern": "Articles/:GuID:",
+          "titleTarget": "",
+          "greedy": false,
+          "target": "articles"
+        },
+        {
+          "name": "create",
+          "pattern": "Create",
+          "target": "create"
+        }
+      ],
+      "targets": {
+        "TargetView1": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "View1",
+          "viewName": "View1",
+          "viewLevel": 1
+        },
+        "articles": {
+          "viewType": "XML",
+          "transition": "slide",
+          "viewName": "Articles",
+          "viewLevel": 2
+        },
+        "create": {
+          "viewType": "XML",
+          "transition": "slide",
+          "viewName": "CreatePage",
+          "viewLevel": 3
+        },
+        "notFound": {
+          "viewName": "NotFound",
+          "transition": "show",
+          "viewLevel": 0
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "articlesfreestyle.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "App"
+    }
+  }
 }

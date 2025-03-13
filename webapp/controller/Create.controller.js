@@ -319,6 +319,7 @@ sap.ui.define([
                 let oRichText = new RichTextEditor({
                     width: "100%",
                     height: "450px",
+                    showGroupFont: true,
                     id: "richtextEditorId" + oDate
                 });
 

@@ -236,6 +236,21 @@ sap.ui.define([
 
             //----------------- Cancel edit ------------------------- 
 
+            onBeforeCancel: function(){
+                let that = this;
+             sap.m.MessageBox.warning("All modifications will be discarded. Continue?", {
+                actions: [ sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
+                emphasizedAction: sap.m.MessageBox.Action.OK,
+                onClose: function (sAction) {
+                    if (sAction == "OK") {
+                        that.onCancel();
+                    } else {
+                        return;
+                    }
+                }
+             });
+            },
+
             onCancel: function (oEvent) {
                 let sMainPath = this.getView().getModel().createKey("Articles", {
                     GuID: this.getView().getBindingContext().getObject().GuID
@@ -327,6 +342,8 @@ sap.ui.define([
                         console.log(oError);
                     }
                 });
+
+   
 
                 //display Code value
                 this.getView().getModel().read(sCodePath, {
@@ -421,7 +438,8 @@ sap.ui.define([
                         let oRichText = new RichTextEditor({
                             width: "100%",
                             height: "450px",
-                            id: "RichtextToSend" + Date.now()
+                            showGroupFont: true,
+                            id: "RichtextToSend" + Date.now()                           
                         });
 
 
@@ -442,6 +460,7 @@ sap.ui.define([
                                 value: "{ContentValue}",
                                 width: "100%",
                                 height: "450px",
+                                showGroupFont: true,
                                 //Date + GuID alone is invalid id
                                 id: "Richtext" + oData.results[x].GuID + Date.now()
                             });

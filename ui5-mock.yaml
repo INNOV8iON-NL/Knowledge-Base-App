@@ -31,13 +31,9 @@ server:
         mountPath: /
         services:
           - urlPath: /sap/opu/odata/sap/ZKNOWLEDGE_UI_ARTICLES_O2
-            generateMockData: true
-            metadataXmlPath: ./webapp/localService/metadata.xml
-            mockdataRootPath: ./webapp/localService/data
-          - urlPath: /sap/opu/odata/sap/ZKNOWLEDGE_UI_ARTICLES_O2/
-            metadataPath: ./webapp/localService/metadata.xml
-            mockdataPath: ./webapp/localService/mockdata
+            metadataPath: ./webapp/localService/mainService/metadata.xml
+            mockdataPath: ./webapp/localService/mainService/data
             generateMockData: true
         annotations:
-          - localPath: ./webapp/localService/mainService_Annotation.xml
-            urlPath: /destinations/ECD/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZKNOWLEDGE_UI_ARTICLES_O2_VAN',Version='0001')/$value/
+          - localPath: ./webapp/localService/mainService/ZKNOWLEDGE_UI_ARTICLES_O2_VAN.xml
+            urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZKNOWLEDGE_UI_ARTICLES_O2_VAN',Version='0001')/$value/

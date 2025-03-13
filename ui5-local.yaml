@@ -41,7 +41,12 @@ server:
         mountPath: /
         services:
           - urlPath: /sap/opu/odata/sap/ZKNOWLEDGE_UI_ARTICLES_O2
-        annotations: []
+            metadataPath: ./webapp/localService/mainService/metadata.xml
+            mockdataPath: ./webapp/localService/mainService/data
+            generateMockData: true
+        annotations:
+          - localPath: ./webapp/localService/mainService/ZKNOWLEDGE_UI_ARTICLES_O2_VAN.xml
+            urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZKNOWLEDGE_UI_ARTICLES_O2_VAN',Version='0001')/$value/
     - name: fiori-tools-preview
       afterMiddleware: fiori-tools-appreload
       configuration:
