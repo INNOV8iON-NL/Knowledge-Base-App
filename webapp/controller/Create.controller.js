@@ -13,6 +13,7 @@ sap.ui.define([
 
             //Variable for checking if inputs are valid
             _isValid: "",
+            _iOrderIndex: 0,
 
 
             onInit: function () {
@@ -139,15 +140,24 @@ sap.ui.define([
                 for (let x = 0; x < oVBoxContent.length; x++) {
                     let oContentId = oVBoxContent[x].getId();
                     //Select Richtext editors from VBox items
-                    if (oContentId.includes("richtextEditor")) {
-                        aContent.push(oVBoxContent[x].getValue());
+                    if (oContentId.includes("rich")) {
+
+                        //Convert string to integer to match datatype in backend
+                        let iIndex = parseInt(oContentId.slice(17));
+
+                        //push to array as 2. array to keep them together
+                        aContent.push([oVBoxContent[x].getValue(), iIndex]);
+                        
                         //Select codeEditor + type from VBox items
-                    } else if (oContentId.includes("codeEditorId")) {
-                       
+                    } else if (oContentId.includes("code")) {                       
                         let type = oVBoxContent[x].getType();
                         let code = oVBoxContent[x].getValue();
+
+                        //Convert string to integer to match datatype in backend
+                        let iIndex = parseInt(oContentId.slice(17));
+
                         //push to array as 2. array to keep them together
-                        aCode.push([type, code]);
+                        aCode.push([type, code, iIndex]);
                     }
                 }
 
@@ -185,14 +195,17 @@ sap.ui.define([
                         //Create entry for Content
                         for (let x = 0; x < aContent.length; x++) {
                             const oContentEntry = this.getView().getModel().createEntry("/Articles(guid'" + articleGuid + "')" + "/to_contentValue");
-                            this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", aContent[x]);
+                            this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", aContent[x][0]);
+                            this.getView().getModel().setProperty(oContentEntry.getPath() + "/OrderIndex", aContent[x][1]);
                             this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleGuID", articleGuid);
                         };
 
+                         //Create entry for Code
                         for (let y = 0; y < aCode.length; y++){
                             const oCodeEntry = this.getView().getModel().createEntry("/Articles(guid'" + articleGuid + "')" + "/to_codeValue");
                             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeType", aCode[y][0]);
                             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeValue", aCode[y][1]);
+                            this.getView().getModel().setProperty(oCodeEntry.getPath() + "/OrderIndex", aCode[y][2]);
                             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/ArticleGuID", articleGuid);
                         };
 
@@ -296,7 +309,10 @@ sap.ui.define([
                 let oDate = Date.now();
                 let oView = this.getView();
 
-                let oButton = new sap.m.Button({
+                this._iOrderIndex++;
+                console.log(this._iOrderIndex);
+
+                let oDeleteButton = new sap.m.Button({
                     text: "Delete textbox",
                     icon: "sap-icon://delete",
                     id: "ContButton" + oDate,
@@ -316,22 +332,46 @@ sap.ui.define([
                     }
                 });
 
+                let oRichTextButton = new sap.m.Button({
+                    text: "Add new text block",
+                    icon: "sap-icon://add"
+                });
+
+                let oCodeButton = new sap.m.Button({
+                    text: "Add new code block",
+                    icon: "sap-icon://add"
+                })
+
+                oRichTextButton.attachPress(function(){
+                    this.onCreateNewRichText();
+                }, this)
+
+                oCodeButton.attachPress(function(){
+                    this.onCreateNewCodeEditor();
+                }, this)
+
                 let oRichText = new RichTextEditor({
                     width: "100%",
                     height: "450px",
                     showGroupFont: true,
-                    id: "richtextEditorId" + oDate
+                    id: "rich" + oDate + this._iOrderIndex
                 });
 
                 this.getView().byId("wizardVBoxId").insertItem(oRichText, oIndex + 1);
-                this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 2);
+                this.getView().byId("wizardVBoxId").insertItem(oDeleteButton, oIndex + 2);
+                this.getView().byId("wizardVBoxId").insertItem(oRichTextButton, oIndex + 3);
+                this.getView().byId("wizardVBoxId").insertItem(oCodeButton, oIndex + 4);
             },
 
             onCreateNewCodeEditor: function () {
+                // let sVBoxId = await this.onCreateVBox();
                 let oVBoxContent = this.getView().byId("wizardVBoxId").getItems();
                 let oIndex = oVBoxContent.length;
                 let oDate = Date.now();
                 let oView = this.getView();
+
+                this._iOrderIndex++;
+                console.log(this._iOrderIndex);
 
                 let oCode = new sap.m.ComboBox({
                     id: "CodeTypeId" + oDate,
@@ -354,7 +394,7 @@ sap.ui.define([
                 let oEditor = new CodeEditor({
                     width: "100%",
                     height: "450px",
-                    id: "codeEditorId" + oDate
+                    id: "code" + oDate + this._iOrderIndex
                 });
 
                 oCode.attachChange(function (oEvent) {
@@ -383,10 +423,57 @@ sap.ui.define([
                     }
                 });
 
+                let oRichTextButton = new sap.m.Button({
+                    text: "Add new text block",
+                    icon: "sap-icon://add"
+                });
+
+                let oCodeButton = new sap.m.Button({
+                    text: "Add new code block",
+                    icon: "sap-icon://add"
+                })
+
+                oRichTextButton.attachPress(function(){
+                    this.onCreateNewRichText();
+                }, this)
+
+                oCodeButton.attachPress(function(){
+                    this.onCreateNewCodeEditor();
+                }, this)
+
                 this.getView().byId("wizardVBoxId").insertItem(oCode, oIndex + 1)
                 this.getView().byId("wizardVBoxId").insertItem(oEditor, oIndex + 2);
                 this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 3);
+                this.getView().byId("wizardVBoxId").insertItem(oRichTextButton, oIndex + 4);
+                this.getView().byId("wizardVBoxId").insertItem(oCodeButton, oIndex + 5);
             },
+
+            // onCreateVBox: function (){
+            //     let oDate = Date.now();
+            //     let oVBoxContent = this.getView().byId("wizardVBoxId").getItems();
+            //     let oIndex = oVBoxContent.length;
+
+            //     let VBox = new sap.m.VBox({
+            //         id: "VBox" + oDate,
+            //         height: '500px'
+            //     });
+            //     this.getView().byId("wizardVBoxId").insertItem(VBox); 
+
+            //     let sId = "VBox" + oDate;
+
+            //     let oCode = new sap.m.ComboBox({
+            //         id: "CodeTypeId" + oDate,
+            //         placeholder: "Choose programming language",
+            //         items: {
+            //             path: "/codeCollection",
+            //             template: new sap.ui.core.Item({
+            //                 key: "{key}",
+            //                 text: "{code}"
+            //             })
+            //         }
+            //     });
+
+            // }
         },
         );
     });

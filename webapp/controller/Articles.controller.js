@@ -306,55 +306,51 @@ sap.ui.define([
                 }
             },
 
+
             renderDisplayControls: function (sContentPath, sCodePath) {
-                //remove items so they are not displayed every time the page loads again
                 let oView = this.getView();
                 oView.byId("articleContent").removeAllItems();
                 oView.byId("articleCode").removeAllItems();
-
-                // /Content(guid'xxx')
-                this.getView().getModel().read(sContentPath, {
-                    success: function (oData) {
-                        for (let x = 0; x < oData.results.length; x++) {
-                            let oFormattedText = new sap.m.FormattedText({
-                                htmlText: "{ContentValue}",
-                                width: "100%"
-                            })
-
-                            // Create binding path
-                            const sContentPath = this.getView().getModel().createKey("ContentValue", {
-                                GuID: oData.results[x].GuID,
-                                ArticleGuID: oData.results[x].ArticleGuID
-                            });
-
-                            // Bind formatted text to content path
-                            oFormattedText.bindElement("/" + sContentPath);
-
-                            //Counting the index here will make sure it is recounted at every loop
-                            let oVBoxContent = oView.byId("articleContent").getItems();
-                            let oIndex = oVBoxContent.length;
-
-                            // Add formatted text to vbox
-                            this.getView().byId("articleContent").insertItem(oFormattedText, oIndex++);
-                        };
-                    }.bind(this),
-                    error: function (oError) {
-                        console.log(oError);
-                    }
+            
+                // Create two promises for the OData calls
+                let promise1 = new Promise((resolve, reject) => {
+                    this.getView().getModel().read(sCodePath, {
+                        success: function (oData) {
+                            resolve(oData.results);  // Resolve with the result of the first call
+                        },
+                        error: function (oError) {
+                            reject(oError);  // Reject if there's an error
+                        }
+                    });
                 });
-
-   
-
-                //display Code value
-                this.getView().getModel().read(sCodePath, {
-                    success: function (oData) {
-                        for (let x = 0; x < oData.results.length; x++) {
-
+            
+                let promise2 = new Promise((resolve, reject) => {
+                    this.getView().getModel().read(sContentPath, {
+                        success: function (oData) {
+                            resolve(oData.results);  // Resolve with the result of the second call
+                        },
+                        error: function (oError) {
+                            reject(oError);  // Reject if there's an error
+                        }
+                    });
+                });
+            
+                // Use Promise.all to wait for both promises to resolve
+                Promise.all([promise1, promise2]).then(([oCodeData, oContentData]) => {
+                    // Merge the data based on OrderIndex
+                    let combinedData = [...oCodeData, ...oContentData];
+            
+                    // Sort combined data by OrderIndex
+                    combinedData.sort((a, b) => a.OrderIndex - b.OrderIndex);
+            
+                    // Now, loop through the sorted combined data and insert items
+                    combinedData.forEach((data) => {
+                        if (data.hasOwnProperty('CodeValue')) {  // If this is from the code data
                             let oType = new sap.m.ComboBox({
                                 editable: false,
                                 value: "{CodeType}"
                             });
-
+            
                             let oEditor = new sap.ui.codeeditor.CodeEditor({
                                 value: "{CodeValue}",
                                 type: "{CodeType}",
@@ -362,29 +358,121 @@ sap.ui.define([
                                 width: "100%",
                                 height: "300px"
                             });
-
-                            //Create binding path
+            
                             const sCodePath = this.getView().getModel().createKey("CodeValue", {
-                                GuID: oData.results[x].GuID,
-                                ArticleGuID: oData.results[x].ArticleGuID
+                                GuID: data.GuID,
+                                ArticleGuID: data.ArticleGuID
                             });
-
+            
                             oType.bindElement("/" + sCodePath);
                             oEditor.bindElement("/" + sCodePath);
-
-                            //Declaring variables here so VBox.length is counted again in every loop
-                            let oVBoxContent = oView.byId("articleCode").getItems();
-                            let oIndex = oVBoxContent.length;
-
-                            this.getView().byId("articleCode").insertItem(oType, oIndex + 1);
-                            this.getView().byId("articleCode").insertItem(oEditor, oIndex + 2);
+            
+                            let iOrderIndex = data.OrderIndex;
+                            this.getView().byId("articleContent").insertItem(oType, iOrderIndex);
+                            this.getView().byId("articleContent").insertItem(oEditor, iOrderIndex);
+                        } else if (data.hasOwnProperty('ContentValue')) {  // If this is from the content data
+                            let oFormattedText = new sap.m.FormattedText({
+                                htmlText: "{ContentValue}",
+                                width: "100%"
+                            });
+            
+                            const sContentPath = this.getView().getModel().createKey("ContentValue", {
+                                GuID: data.GuID,
+                                ArticleGuID: data.ArticleGuID
+                            });
+            
+                            oFormattedText.bindElement("/" + sContentPath);
+            
+                            let iOrderIndex = data.OrderIndex;
+                            this.getView().byId("articleContent").insertItem(oFormattedText, iOrderIndex);
                         }
-                    }.bind(this),
-                    error: function (oError) {
-                        console.log(oError);
-                    }
-                })
+                    });
+                }).catch((error) => {
+                    console.log("Error fetching data:", error);
+                });
             },
+
+            // renderDisplayControls: function (sContentPath, sCodePath) {
+            //     //remove items so they are not displayed every time the page loads again
+            //     let oView = this.getView();
+            //     oView.byId("articleContent").removeAllItems();
+            //     oView.byId("articleCode").removeAllItems();
+
+            //                     //display Code value
+            //                     this.getView().getModel().read(sCodePath, {
+            //                         success: function (oData) {
+            //                             for (let x = 0; x < oData.results.length; x++) {
+                
+            //                                 let oType = new sap.m.ComboBox({
+            //                                     editable: false,
+            //                                     value: "{CodeType}"
+            //                                 });
+                
+            //                                 let oEditor = new sap.ui.codeeditor.CodeEditor({
+            //                                     value: "{CodeValue}",
+            //                                     type: "{CodeType}",
+            //                                     editable: false,
+            //                                     width: "100%",
+            //                                     height: "300px"
+            //                                 });
+                
+            //                                 //Create binding path
+            //                                 const sCodePath = this.getView().getModel().createKey("CodeValue", {
+            //                                     GuID: oData.results[x].GuID,
+            //                                     ArticleGuID: oData.results[x].ArticleGuID
+            //                                 });
+                
+            //                                 oType.bindElement("/" + sCodePath);
+            //                                 oEditor.bindElement("/" + sCodePath);
+                
+            //                                 let iOrderIndex = oData.results[x].OrderIndex
+                
+            //                                 //Declaring variables here so VBox.length is counted again in every loop
+            //                                 let oVBoxContent = oView.byId("articleCode").getItems();
+            //                                 let oIndex = oVBoxContent.length;
+                
+            //                                 this.getView().byId("articleContent").insertItem(oType, iOrderIndex);
+            //                                 this.getView().byId("articleContent").insertItem(oEditor,iOrderIndex);
+            //                             }
+            //                         }.bind(this),
+            //                         error: function (oError) {
+            //                             console.log(oError);
+            //                         }
+            //                     });
+
+            //     // /Content(guid'xxx')
+            //     this.getView().getModel().read(sContentPath, {
+            //         success: function (oData) {
+            //             for (let x = 0; x < oData.results.length; x++) {
+            //                 let oFormattedText = new sap.m.FormattedText({
+            //                     htmlText: "{ContentValue}",
+            //                     width: "100%"
+            //                 })
+
+            //                 // Create binding path
+            //                 const sContentPath = this.getView().getModel().createKey("ContentValue", {
+            //                     GuID: oData.results[x].GuID,
+            //                     ArticleGuID: oData.results[x].ArticleGuID
+            //                 });
+
+            //                 // Bind formatted text to content path
+            //                 oFormattedText.bindElement("/" + sContentPath);
+
+            //                 let iOrderIndex = oData.results[x].OrderIndex
+
+            //                 // //Counting the index here will make sure it is recounted at every loop
+            //                 // let oVBoxContent = oView.byId("articleContent").getItems();
+            //                 // let oIndex = oVBoxContent.length;
+
+            //                 // Add formatted text to vbox
+            //                 this.getView().byId("articleContent").insertItem(oFormattedText, iOrderIndex);
+            //             };
+            //         }.bind(this),
+            //         error: function (oError) {
+            //             console.log(oError);
+            //         }
+            //     });
+            // },
 
             deleteFromButton: function (oEvent, articleGuID, itemToDelete) {
                 let item = {

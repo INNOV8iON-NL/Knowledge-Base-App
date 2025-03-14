@@ -121,6 +121,7 @@
                         visible="true"
                         id="descText"
                     />
+
                     <TextArea
                         value="{Description}"
                         rows="10"
@@ -140,6 +141,14 @@
                     <List items="{to_tags}">
                         <DisplayListItem value="{TagName}" />
                     </List>
+
+                    <Title
+                        text="Index"
+                        class="sapUiTinyMarginBottom"
+                    />
+                    <List items="{to_codeValue}">
+                        <DisplayListItem value="{OrderIndex}" />
+                    </List>
                 </VBox>
             </HeaderContainer>
         </uxap:headerContent>
@@ -151,8 +160,7 @@
             >
                 <uxap:subSections>
                     <uxap:ObjectPageSubSection>
-                        <VBox id="articleContent">                          
-                        </VBox>
+                        <VBox id="articleContent" />
                     </uxap:ObjectPageSubSection>
                 </uxap:subSections>
             </uxap:ObjectPageSection>
@@ -164,8 +172,7 @@
             <uxap:ObjectPageSection title="Code">
                 <uxap:subSections>
                     <uxap:ObjectPageSubSection title="Code">
-                    <VBox id="articleCode" >
-                        </VBox>
+                        <VBox id="articleCode" />
                     </uxap:ObjectPageSubSection>
                 </uxap:subSections>
             </uxap:ObjectPageSection>
