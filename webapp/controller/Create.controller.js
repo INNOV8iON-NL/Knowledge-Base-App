@@ -292,7 +292,7 @@ sap.ui.define([
 
                 this.getView().byId("multiInputId").removeAllTokens();
                 this.getView().byId("multiInputId").setValueState("Error");
-                this.getView().byId("comboBoxId").setSelectedKey("");
+                // this.getView().byId("comboBoxId").setSelectedKey("");
                 this.getView().byId("newArticleWizard").invalidateStep(this.getView().byId("TitleStep"));
                 this.getView().byId("newArticleWizard").invalidateStep(this.getView().byId("ContentStep"));
                 this.getView().byId("descriptionId").setValueState("Error");
@@ -371,10 +371,10 @@ sap.ui.define([
                 let oView = this.getView();
 
                 this._iOrderIndex++;
-                console.log(this._iOrderIndex);
+
 
                 let oCode = new sap.m.ComboBox({
-                    id: "CodeTypeId" + oDate,
+                    id: "CodeTypeId" + oDate + this._iOrderIndex,
                     placeholder: "Choose programming language",
                     items: {
                         path: "/codeCollection",
@@ -387,7 +387,7 @@ sap.ui.define([
 
                 //Set value help with code options
                 let oModel = new sap.ui.model.json.JSONModel();
-                oModel.loadData("model/codecollection.json");
+                oModel.loadData("/model/codecollection.json");
                 oModel.setSizeLimit(160);
                 oCode.setModel(oModel);
 

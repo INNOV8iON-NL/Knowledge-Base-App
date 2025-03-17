@@ -141,14 +141,6 @@
                     <List items="{to_tags}">
                         <DisplayListItem value="{TagName}" />
                     </List>
-
-                    <Title
-                        text="Index"
-                        class="sapUiTinyMarginBottom"
-                    />
-                    <List items="{to_codeValue}">
-                        <DisplayListItem value="{OrderIndex}" />
-                    </List>
                 </VBox>
             </HeaderContainer>
         </uxap:headerContent>
@@ -160,7 +152,7 @@
             >
                 <uxap:subSections>
                     <uxap:ObjectPageSubSection>
-                        <VBox id="articleContent" />
+                        <VBox id="articleContent"/>
                     </uxap:ObjectPageSubSection>
                 </uxap:subSections>
             </uxap:ObjectPageSection>
@@ -168,14 +160,6 @@
                 titleUppercase="false"
                 title="Code"
             />
-
-            <uxap:ObjectPageSection title="Code">
-                <uxap:subSections>
-                    <uxap:ObjectPageSubSection title="Code">
-                        <VBox id="articleCode" />
-                    </uxap:ObjectPageSubSection>
-                </uxap:subSections>
-            </uxap:ObjectPageSection>
         </uxap:sections>
     </uxap:ObjectPageLayout>
 </mvc:View>
