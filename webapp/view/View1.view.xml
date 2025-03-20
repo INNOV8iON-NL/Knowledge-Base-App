@@ -84,7 +84,7 @@
                     selectionChange=".onSelectionChange"
                 >
                     <columns>
-                    <Column
+                    <!-- <Column
                             id="Description"
                             hAlign="Begin"
                         >
@@ -95,7 +95,7 @@
                                 />
                             </customData>
                             <Text text="Description" />
-                        </Column>
+                        </Column> -->
                         <Column
                             id="Category"
                             hAlign="Begin"
@@ -114,9 +114,9 @@
                             type="Navigation"
                             press=".onDetailPress"
                         >
-                        <cells>
-                           <ExpandableText text="{Description}" class="sapUiTinyMargin"></ExpandableText>
-                        </cells>
+                        <!-- <cells>
+                           <Text text="{Description}" class="sapUiTinyMargin"></Text>
+                        </cells> -->
                             <cells>                            
                                 <List
                                     id="tagListId"

@@ -14,7 +14,6 @@ sap.ui.define([
             //Variable for checking if editing mode is active
             _isEditing: "",
 
-
             onInit: function () {
                 var oRouter = this.getRouter();
 
@@ -33,10 +32,6 @@ sap.ui.define([
                 this._sArticleId = oArgs.GuID;
                 let sContentPath = "/Articles(guid'" + this._sArticleId + "')" + "/to_contentValue";
                 let sCodePath = "/Articles(guid'" + this._sArticleId + "')" + "/to_codeValue";
-                // let formattedText = new sap.m.FormattedText({
-                //     text:"new text"
-                // });
-
 
                 this.renderDisplayControls(sContentPath, sCodePath);
 
@@ -52,7 +47,6 @@ sap.ui.define([
                         }
                     }
                 });
-
 
                 this.getView().byId("descText").setVisible(true);
                 this.getView().byId("descValue").setVisible(false);
@@ -418,28 +412,79 @@ sap.ui.define([
                 }
             },
 
-            createNewRichText: function (oEvent, OrderIndex) {
-                let iVBoxLength = this.getView().byId("articleContent").getItems();
+            createNewRichText: function (OrderIndex, ArticleGuID) {
+                console.log(OrderIndex);
+                let articleContent = this.getView().byId("articleContent");
+                let aVBox = articleContent.getItems();
 
-                let oRichText = new RichTextEditor({
+                for(let x = 0; x < aVBox.length; x++){
+                    let oItems = aVBox[x].getItems();
+                    
+                    let itemOIndex = oItems[0].getBindingContext().getProperty('OrderIndex');
+                   // console.log(itemOIndex);
+                    if(OrderIndex < itemOIndex ){
+                        itemOIndex += 1;
+                        oItems[0].getBindingContext().getModel().setProperty(oItems[0].getBindingContext().getPath() + '/OrderIndex', itemOIndex);
+                    }
+                }
+
+                 let oRichText = new sap.ui.richtexteditor.RichTextEditor({
                     width: "100%",
                     height: "450px",
                     showGroupFont: true,
                     id: "RichtextToSend" + Date.now()
                 });
 
-                
-                let oCodeVBox = new VBox({
-                });
-
+                let oCodeVBox = new VBox();
                 oCodeVBox.addStyleClass("sapUiMediumMarginBottom");
 
-                // if(OrderIndex < iVBoxLength){
-
-                // }
-
+                // Insert the RichText editor into the VBox
                 oCodeVBox.insertItem(oRichText);
-                this.getView().byId("articleContent").insertItem(oCodeVBox, OrderIndex);
+
+                let oModel = this.getView().getModel();
+
+                let newOrderIndex = OrderIndex + 1;
+
+                articleContent.insertItem(oCodeVBox, newOrderIndex);
+
+                let oContext = oModel.createEntry("/Articles(guid'" + ArticleGuID + "')" + "/to_contentValue", {
+                    properties: { ContentValue: oRichText.getValue(), OrderIndex: newOrderIndex, ArticleGuID: ArticleGuID  }
+                });
+
+                oCodeVBox.setBindingContext(oContext);
+           
+                let newVBox = articleContent.getItems();
+
+               // console.log(newVBox);
+
+              //  console.log("------------------------");
+
+                // newVBox.forEach(function (vbox, index) {
+                
+                //         let oItem = vbox.getItems()[0];
+                //         let itemOrderIndex = oItem.getBindingContext().getProperty('OrderIndex');
+                //     //    console.log(itemOrderIndex);
+                    
+                // }, this);
+
+                
+                newVBox.sort(function (vbox1, vbox2) {
+                    let oItem1 = vbox1.getItems()[0];
+                    let oItem2 = vbox2.getItems()[0];
+            
+                    let itemOrderIndex1 = oItem1.getBindingContext().getProperty('OrderIndex');
+                    let itemOrderIndex2 = oItem2.getBindingContext().getProperty('OrderIndex');
+            
+                    return itemOrderIndex1 - itemOrderIndex2;  // Ascending order
+                });
+                articleContent.removeAllItems();  // Clear all items first
+                newVBox.forEach(function (vbox) {
+                    articleContent.addItem(vbox);  // Add items back in sorted order
+                });
+
+              //  console.log(newVBox);
+            
+
             },
 
             renderEditControls: function () {
@@ -480,6 +525,10 @@ sap.ui.define([
 
                     // Sort combined data by OrderIndex
                     combinedData.sort((a, b) => a.OrderIndex - b.OrderIndex);
+
+                    let aIndexes = [];
+
+                    combinedData.map((data) => aIndexes.push(data.OrderIndex));
 
                     combinedData.forEach((data) => {
                         if (data.hasOwnProperty('CodeValue')) {  // If this is from the code data
@@ -544,30 +593,19 @@ sap.ui.define([
                             }, this);
 
                             let iOrderIndex = data.OrderIndex;
-                            this.getView().byId("articleContent").insertItem(oCodeVBox, iOrderIndex);
+                            this.getView().byId("articleContent").insertItem(oCodeVBox, data.OrderIndex);
                         }
 
                         else if (data.hasOwnProperty('ContentValue')) {  // If this is from the content data
                             let oContentVBox = new VBox({
                                 //Date.now is important to ensure unique ids
-                                id: 'v' + Date.now() + data.GuID
+                                id: 'v' + Date.now() + data.GuID + "---" + data.OrderIndex
                             });
 
                             let oNewContentButton = new sap.m.Button({
                                 text: "Add new textbox",
                                 icon: "sap-icon://add",
-                                // press: function () {
-                                //     let oRichText = new RichTextEditor({
-                                //         width: "100%",
-                                //         height: "450px",
-                                //         showGroupFont: true,
-                                //         id: "RichtextToSend" + Date.now()
-                                //     });
-
-                                //     let oVBoxContent = oView.byId("articleContent").getItems();
-                                //     let oIndex = oVBoxContent.length;
-                                //     oView.byId("articleContent").insertItem(oRichText, oIndex + 1);
-                                // }
+                                id: 'b' + Date.now()
                             });
                             let oRichText = new sap.ui.richtexteditor.RichTextEditor({
                                 value: "{ContentValue}",
@@ -598,8 +636,8 @@ sap.ui.define([
                             oContentVBox.insertItem(oNewContentButton);
                             oContentVBox.insertItem(oRichText);
 
-                            oNewContentButton.attachPress(function (oEvent) {
-                                this.createNewRichText(oEvent, data.OrderIndex);
+                            oNewContentButton.attachPress(function () {
+                                this.createNewRichText(data.OrderIndex, data.ArticleGuID);
                             }, this);
 
                             oContentDelete.attachPress(function (oEvent) {
@@ -607,7 +645,7 @@ sap.ui.define([
                             }, this);
 
                             let iOrderIndex = data.OrderIndex;
-                            this.getView().byId("articleContent").insertItem(oContentVBox, iOrderIndex);
+                            this.getView().byId("articleContent").insertItem(oContentVBox, data.OrderIndex);
                         }
                     });
                 }).catch((error) => {
@@ -615,7 +653,6 @@ sap.ui.define([
                 });
 
                 //---------------------------------------------------------------------------
-
 
                 // let oView = this.getView();
 

@@ -309,8 +309,7 @@ sap.ui.define([
                 let oDate = Date.now();
                 let oView = this.getView();
 
-                this._iOrderIndex++;
-                console.log(this._iOrderIndex);
+
 
                 let oDeleteButton = new sap.m.Button({
                     text: "Delete textbox",
@@ -361,6 +360,7 @@ sap.ui.define([
                 this.getView().byId("wizardVBoxId").insertItem(oDeleteButton, oIndex + 2);
                 this.getView().byId("wizardVBoxId").insertItem(oRichTextButton, oIndex + 3);
                 this.getView().byId("wizardVBoxId").insertItem(oCodeButton, oIndex + 4);
+                this._iOrderIndex++;
             },
 
             onCreateNewCodeEditor: function () {
@@ -369,9 +369,6 @@ sap.ui.define([
                 let oIndex = oVBoxContent.length;
                 let oDate = Date.now();
                 let oView = this.getView();
-
-                this._iOrderIndex++;
-
 
                 let oCode = new sap.m.ComboBox({
                     id: "CodeTypeId" + oDate + this._iOrderIndex,
@@ -446,6 +443,7 @@ sap.ui.define([
                 this.getView().byId("wizardVBoxId").insertItem(oButton, oIndex + 3);
                 this.getView().byId("wizardVBoxId").insertItem(oRichTextButton, oIndex + 4);
                 this.getView().byId("wizardVBoxId").insertItem(oCodeButton, oIndex + 5);
+                this._iOrderIndex++;
             },
 
             // onCreateVBox: function (){
