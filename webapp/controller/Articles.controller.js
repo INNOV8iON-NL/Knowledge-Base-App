@@ -21,9 +21,6 @@ sap.ui.define([
 
                 //Array to collect items to be deleted
                 this.itemsToDelete = [];
-
-                //Array to collect new contexts
-                this._aContexts = [];
             },
 
             getRouter: function () {
@@ -146,23 +143,6 @@ sap.ui.define([
                     } 
                 }
 
-                // let aContexts = this._aContexts;
-
-                // // this._aContexts.forEach(function (oContext) {
-                  
-                // // }, this);
-
-                // //create new entries for new content
-                // for (let x = 0; x < aContent.length; x++) {
-                //     let aInnerContent = aContent[x].getItems();
-                //     for (let y = 0; y < aInnerContent.length; y++){
-                //         let sId = aInnerContent[y].sId;
-                //         if (sId.includes("RichtextToSend")) {
-                //             const oContentEntry = this.getView().getModel().createEntry("/Articles(guid'" + sGuID + "')" + "/to_contentValue");
-                //             this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", aInnerContent[y].getValue());
-                //             this.getView().getModel().setProperty(oContentEntry.getPath() + "/OrderIndex", aInnerContent[y].getValue());
-                //             this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleGuID", sGuID)
-                //         } 
                 //          if (sId.includes("CodeToSend")) {
                 //             const oCodeEntry = this.getView().getModel().createEntry("/Articles(guid'" + sGuID + "')" + "/to_codeValue");
                 //             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeValue", aCode[z].getValue());
@@ -368,7 +348,7 @@ sap.ui.define([
                             });
 
                             oCodeVBox.removeStyleClass("sapUiContentPadding");
-                            oCodeVBox.addStyleClass("sapUiSmallMarginBottom");
+                            oCodeVBox.addStyleClass("sapUiLargeMarginBottom");
                             oCodeVBox.insertItem(oEditor);
                             oCodeVBox.insertItem(oType);
 
@@ -449,10 +429,10 @@ sap.ui.define([
 
             createNewRichText: function (OrderIndex, ArticleGuID) {
                 let articleContent = this.getView().byId("articleContent");
-                let aVBox = articleContent.getItems();
+                let aContainerVBox = articleContent.getItems();
 
-                for (let x = 0; x < aVBox.length; x++) {
-                    let oItems = aVBox[x].getItems();
+                for (let x = 0; x < aContainerVBox.length; x++) {
+                    let oItems = aContainerVBox[x].getItems();
                     let itemOIndex = oItems[0].getBindingContext().getProperty('OrderIndex');
                     //Check index and update all indexes that come later
                     if (OrderIndex < itemOIndex) {
@@ -460,7 +440,9 @@ sap.ui.define([
                         itemOIndex += 1;
                         oItems[0].getBindingContext().getModel().setProperty(oItems[0].getBindingContext().getPath() + '/OrderIndex', itemOIndex);
                         //destroy create buttons to get rid of old orderindex number
-                        oItems[1].destroy();
+                        let oHBox = oItems[1];
+                        let oHBoxItems = oHBox.getItems();
+                        oHBoxItems[0].destroy();
 
                         //Recreate buttons with updated itemOIndex
                         let oReplaceContentButton = new sap.m.Button({
@@ -468,8 +450,8 @@ sap.ui.define([
                             icon: "sap-icon://add",
                             id: 'oldButton' + oDate
                         });
-                        aVBox[x].insertItem(oReplaceContentButton, 1);
-                        let a = aVBox[x].getItems();
+                        
+                        oHBox.insertItem(oReplaceContentButton, 0);
                         oReplaceContentButton.attachPress(function () {
                             this.createNewRichText(itemOIndex, ArticleGuID);
                         }, this);
@@ -484,20 +466,10 @@ sap.ui.define([
                     value: "{ContentValue}"
                 });
 
-                let oNewContentButton = new sap.m.Button({
-                    text: "Add new textbox",
-                    icon: "sap-icon://add",
-                    id: 'newButton' + Date.now()
-                });
-
                 let newOrderIndex = OrderIndex + 1;
 
-                oNewContentButton.attachPress(function () {
-                    this.createNewRichText(newOrderIndex, ArticleGuID);
-                }, this);
-
                 let oCodeVBox = new VBox();
-                oCodeVBox.addStyleClass("sapUiMediumMarginBottom");
+                oCodeVBox.addStyleClass("sapUiLargeMarginBottom");
 
                 let oModel = this.getView().getModel();
 
@@ -512,6 +484,8 @@ sap.ui.define([
 
                 let sNewId= oRichText.getBindingContext().getPath();
 
+                let oButtonHBox = new sap.m.HBox();
+
                 let oContentDelete = new sap.m.Button({
                     text: "Delete textbox",
                     icon: "sap-icon://delete",
@@ -519,20 +493,29 @@ sap.ui.define([
                     id: "b" + Date.now() + sNewId.slice(15,34)
                 });
 
-                oCodeVBox.insertItem(oContentDelete);
-                oCodeVBox.insertItem(oNewContentButton);
-                oCodeVBox.insertItem(oRichText);
+                let oNewContentButton = new sap.m.Button({
+                    text: "Add new textbox",
+                    icon: "sap-icon://add",
+                    id: 'newButton' + Date.now()
+                });
 
-                articleContent.insertItem(oCodeVBox, newOrderIndex);
+                oNewContentButton.attachPress(function () {
+                    this.createNewRichText(newOrderIndex, ArticleGuID);
+                }, this);
 
                 oContentDelete.attachPress(function (oEvent) {
                     this.deleteNewContent(oEvent, oContext);
                 }, this);
 
+                oButtonHBox.insertItem(oContentDelete);
+                oButtonHBox.insertItem(oNewContentButton);
+                oCodeVBox.insertItem(oButtonHBox);
+                oCodeVBox.insertItem(oRichText);
+
+                articleContent.insertItem(oCodeVBox, newOrderIndex);
+
                 //Get all outer VBox items
                 let newVBox = articleContent.getItems();
-
-                this._aContexts.push(oContext);
 
                 //Sort in ascending order
                 newVBox.sort(function (vbox1, vbox2) {
@@ -646,7 +629,7 @@ sap.ui.define([
                             });
 
                             oEditor.removeStyleClass("sapUiContentPadding");
-                            oCodeVBox.addStyleClass("sapUiMediumMarginBottom");
+                            oCodeVBox.addStyleClass("sapUiLargeMarginBottom");
                             oCodeVBox.insertItem(oCodeDelete);
                             oCodeVBox.insertItem(oEditor);
                             oCodeVBox.insertItem(oType);
@@ -665,11 +648,8 @@ sap.ui.define([
                                 id: 'v' + Date.now() + data.OrderIndex
                             });
 
-                            let oNewContentButton = new sap.m.Button({
-                                text: "Add new textbox",
-                                icon: "sap-icon://add"
-                                // id: 'b' + Date.now()
-                            });
+                            let oButtonHBox = new sap.m.HBox();
+
                             let oRichText = new sap.ui.richtexteditor.RichTextEditor({
                                 value: "{ContentValue}",
                                 width: "100%",
@@ -683,6 +663,12 @@ sap.ui.define([
                                 ArticleGuID: data.ArticleGuID
                             });
 
+                            let oNewContentButton = new sap.m.Button({
+                                text: "Add new textbox",
+                                icon: "sap-icon://add"
+                                // id: 'b' + Date.now()
+                            });
+
                             let oContentDelete = new sap.m.Button({
                                 text: "Delete textbox",
                                 icon: "sap-icon://delete",
@@ -693,9 +679,10 @@ sap.ui.define([
 
                             oRichText.bindElement("/" + sContentPath);
 
-                            oContentVBox.addStyleClass("sapUiMediumMarginBottom");
-                            oContentVBox.insertItem(oContentDelete);
-                            oContentVBox.insertItem(oNewContentButton);
+                            oContentVBox.addStyleClass("sapUiLargeMarginBottom");
+                            oButtonHBox.insertItem(oContentDelete);
+                            oButtonHBox.insertItem(oNewContentButton);
+                            oContentVBox.insertItem(oButtonHBox);
                             oContentVBox.insertItem(oRichText);
 
                             oNewContentButton.attachPress(function () {
