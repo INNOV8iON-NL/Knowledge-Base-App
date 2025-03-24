@@ -21,6 +21,9 @@ sap.ui.define([
 
                 //Array to collect items to be deleted
                 this.itemsToDelete = [];
+
+                //Array to collect new contexts
+                this._aContexts = [];
             },
 
             getRouter: function () {
@@ -140,52 +143,63 @@ sap.ui.define([
                         this.getView().getModel().remove("/ContentValue(GuID=guid'" + this.itemsToDelete[y].sId + "',ArticleGuID=guid'" + sGuID + "')");
                     } else if (this.itemsToDelete[y].itemToDelete === "Code") {
                         this.getView().getModel().remove("/CodeValue(GuID=guid'" + this.itemsToDelete[y].sId + "',ArticleGuID=guid'" + sGuID + "')");
-                    }
+                    } 
                 }
 
-                //create new entries for new content
-                for (let x = 0; x < aContent.length; x++) {
-                    let sId = aContent[x].sId;
-                    if (sId.includes("RichtextToSend")) {
-                        const oContentEntry = this.getView().getModel().createEntry("/Articles(guid'" + sGuID + "')" + "/to_contentValue");
-                        this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", aContent[x].getValue());
-                        this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleGuID", sGuID)
-                    } else if (sId.includes("CodeToSend")) {
-                        const oCodeEntry = this.getView().getModel().createEntry("/Articles(guid'" + sGuID + "')" + "/to_codeValue");
-                        this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeValue", aCode[z].getValue());
-                        this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeType", aCode[z].getType());
-                        this.getView().getModel().setProperty(oCodeEntry.getPath() + "/ArticleGuID", sGuID)
-                    }
-                }
+                // let aContexts = this._aContexts;
+
+                // // this._aContexts.forEach(function (oContext) {
+                  
+                // // }, this);
+
+                // //create new entries for new content
+                // for (let x = 0; x < aContent.length; x++) {
+                //     let aInnerContent = aContent[x].getItems();
+                //     for (let y = 0; y < aInnerContent.length; y++){
+                //         let sId = aInnerContent[y].sId;
+                //         if (sId.includes("RichtextToSend")) {
+                //             const oContentEntry = this.getView().getModel().createEntry("/Articles(guid'" + sGuID + "')" + "/to_contentValue");
+                //             this.getView().getModel().setProperty(oContentEntry.getPath() + "/ContentValue", aInnerContent[y].getValue());
+                //             this.getView().getModel().setProperty(oContentEntry.getPath() + "/OrderIndex", aInnerContent[y].getValue());
+                //             this.getView().getModel().setProperty(oContentEntry.getPath() + "/ArticleGuID", sGuID)
+                //         } 
+                //          if (sId.includes("CodeToSend")) {
+                //             const oCodeEntry = this.getView().getModel().createEntry("/Articles(guid'" + sGuID + "')" + "/to_codeValue");
+                //             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeValue", aCode[z].getValue());
+                //             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/CodeType", aCode[z].getType());
+                //             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/ArticleGuID", sGuID)
+                //         }
+                //     }
+                // }
 
                 const oContext = this.getView().getModel().update(sPath, {
-                    GuID: this.getView().getBindingContext().getObject().GuID,
-                    Title: this.getView().byId("titleText").getValue,
-                    Description: this.getView().byId("descText").getValue,
-                },
-                    {
-                        success: function (oData) {
-                            sap.m.MessageBox.success("Article was updated.", {
-                                onClose: function () {
-                                    //Refresh window so modifications appear
-                                    window.location.reload();
-                                }
-                            });
-                        }.bind(this),
-                        error: function () {
-                            sap.m.MessageBox.error("Article could not be updated.");
-                        }
-                    }
-                )
-                this.getView().getModel().submitChanges({
-                    success: function (oData) {
-
-                    }.bind(this),
-                    error: function (oData) {
-                        console.log("Something went wrong.");
-                    }.bind(this)
-                });
+                GuID: this.getView().getBindingContext().getObject().GuID,
+                Title: this.getView().byId("titleText").getValue,
+                Description: this.getView().byId("descText").getValue,
             },
+                {
+                    success: function (oData) {
+                        sap.m.MessageBox.success("Article was updated.", {
+                            onClose: function () {
+                                //Refresh window so modifications appear
+                                window.location.reload();
+                            }
+                        });
+                    }.bind(this),
+                    error: function () {
+                        sap.m.MessageBox.error("Article could not be updated.");
+                    }
+                }
+            )
+                this.getView().getModel().submitChanges({
+                success: function (oData) {
+
+                }.bind(this),
+                error: function (oData) {
+                    console.log("Something went wrong.");
+                }.bind(this)
+            });
+        },
 
             returnIdListOfRequiredFields: function () {
                 let requiredInputs;
@@ -395,21 +409,42 @@ sap.ui.define([
                     articleGuID: articleGuID,
                     itemToDelete: itemToDelete
                 }
-                //push to itemsToDelete for later use in onSaveChanges function
+                //push item to itemsToDelete for later use in onSaveChanges function
                 this.itemsToDelete.push(item);
 
                 //Slice everything from the ID that is not GuID
                 let sContentId = oEvent.getSource().getId().slice(14);
 
-                let oElementsArr = this.getView().byId("articleContent");
-                let oElement = oElementsArr.getItems();
+                let oVBoxContainer = this.getView().byId("articleContent");
+                let oVBoxes = oVBoxContainer.getItems();
 
                 //only remove items from frontend view 
-                for (let x = 0; x < oElement.length; x++) {
-                    if (oElement[x].sId.includes(sContentId)) {
-                        oElementsArr.removeItem(oElement[x]);
+                for (let x = 0; x < oVBoxes.length; x++) {
+                    let oInnerVBox = oVBoxes[x].getItems();
+                    for (let y = 0; y < oInnerVBox.length; y++) {
+                        if (oInnerVBox[y].sId.includes(sContentId)) {
+                            oVBoxContainer.removeItem(oVBoxes[x]);
+                        }
                     }
                 }
+            },
+
+            deleteNewContent: function(oEvent, oContext){
+                let sItemId = oEvent.getSource().getId();
+                let oContainer = this.getView().byId("articleContent");
+                let oVBoxes = oContainer.getItems();
+                
+                for (let x = 0; x < oVBoxes.length; x++){
+                    let oInnerVBox = oVBoxes[x].getItems();
+                    for (let y = 0; y < oInnerVBox.length; y++) {
+                        if (oInnerVBox[y].sId.includes(sItemId)) {
+                            //remove vbox from frontend
+                            oContainer.removeItem(oVBoxes[x]);
+                        }
+                    }
+                }
+                //Newly created context is deleted, so it won`t be sent to the backend
+                oContext.delete();
             },
 
             createNewRichText: function (OrderIndex, ArticleGuID) {
@@ -424,12 +459,12 @@ sap.ui.define([
                         let oDate = Date.now();
                         itemOIndex += 1;
                         oItems[0].getBindingContext().getModel().setProperty(oItems[0].getBindingContext().getPath() + '/OrderIndex', itemOIndex);
-                        //destroy create buttons
+                        //destroy create buttons to get rid of old orderindex number
                         oItems[1].destroy();
 
                         //Recreate buttons with updated itemOIndex
                         let oReplaceContentButton = new sap.m.Button({
-                            text: "REPLACE Add new textbox",
+                            text: "Add new textbox",
                             icon: "sap-icon://add",
                             id: 'oldButton' + oDate
                         });
@@ -443,17 +478,18 @@ sap.ui.define([
 
                 let oRichText = new sap.ui.richtexteditor.RichTextEditor({
                     width: "100%",
-                    height: "450px",
+                    height: "300px",
                     showGroupFont: true,
-                    id: "RichtextToSend" + Date.now()
+                    id: "RichtextToSend" + Date.now(),
+                    value: "{ContentValue}"
                 });
 
                 let oNewContentButton = new sap.m.Button({
-                    text: "NEW Add new textbox",
+                    text: "Add new textbox",
                     icon: "sap-icon://add",
                     id: 'newButton' + Date.now()
                 });
-               
+
                 let newOrderIndex = OrderIndex + 1;
 
                 oNewContentButton.attachPress(function () {
@@ -463,22 +499,40 @@ sap.ui.define([
                 let oCodeVBox = new VBox();
                 oCodeVBox.addStyleClass("sapUiMediumMarginBottom");
 
-                oCodeVBox.insertItem(oNewContentButton);
-                oCodeVBox.insertItem(oRichText);
-
                 let oModel = this.getView().getModel();
-
-                articleContent.insertItem(oCodeVBox, newOrderIndex);
 
                 //Create entry for new content
                 let oContext = oModel.createEntry("/Articles(guid'" + ArticleGuID + "')" + "/to_contentValue", {
-                    properties: { ContentValue: oRichText.getValue(), OrderIndex: newOrderIndex, ArticleGuID: ArticleGuID }
+                    properties: { ContentValue:"", OrderIndex: newOrderIndex, ArticleGuID: ArticleGuID }
                 });
 
                 oCodeVBox.setBindingContext(oContext);
 
+                oRichText.setBindingContext(oContext);
+
+                let sNewId= oRichText.getBindingContext().getPath();
+
+                let oContentDelete = new sap.m.Button({
+                    text: "Delete textbox",
+                    icon: "sap-icon://delete",
+                    //Date.now is important to ensure unique ids
+                    id: "b" + Date.now() + sNewId.slice(15,34)
+                });
+
+                oCodeVBox.insertItem(oContentDelete);
+                oCodeVBox.insertItem(oNewContentButton);
+                oCodeVBox.insertItem(oRichText);
+
+                articleContent.insertItem(oCodeVBox, newOrderIndex);
+
+                oContentDelete.attachPress(function (oEvent) {
+                    this.deleteNewContent(oEvent, oContext);
+                }, this);
+
                 //Get all outer VBox items
                 let newVBox = articleContent.getItems();
+
+                this._aContexts.push(oContext);
 
                 //Sort in ascending order
                 newVBox.sort(function (vbox1, vbox2) {
@@ -488,7 +542,7 @@ sap.ui.define([
                     let itemOrderIndex1 = oItem1.getBindingContext().getProperty('OrderIndex');
                     let itemOrderIndex2 = oItem2.getBindingContext().getProperty('OrderIndex');
 
-                    return itemOrderIndex1 - itemOrderIndex2;  
+                    return itemOrderIndex1 - itemOrderIndex2;
                 });
                 articleContent.removeAllItems();  // Clear all items first
                 newVBox.forEach(function (vbox) {
@@ -607,24 +661,21 @@ sap.ui.define([
 
                         else if (data.hasOwnProperty('ContentValue')) {  // If this is from the content data
                             let oContentVBox = new VBox({
-                                //Date.now is important to ensure unique ids
-                                id: 'v' + Date.now() + data.GuID + "---" + data.OrderIndex
+                                //Date.now + OrderIndex is important to ensure unique ids
+                                id: 'v' + Date.now() + data.OrderIndex
                             });
-
-                            //Date.now is important to ensure unique ids
-                            let sId = "r" + Date.now() + data.GuID;
 
                             let oNewContentButton = new sap.m.Button({
                                 text: "Add new textbox",
-                                icon: "sap-icon://add",
-                                id: 'b' + Date.now()
+                                icon: "sap-icon://add"
+                                // id: 'b' + Date.now()
                             });
                             let oRichText = new sap.ui.richtexteditor.RichTextEditor({
                                 value: "{ContentValue}",
                                 width: "100%",
                                 showGroupFont: true,
                                 height: "300px",
-                                id: sId
+                                id: "r" + Date.now() + data.GuID
                             });
 
                             const sContentPath = this.getView().getModel().createKey("ContentValue", {
@@ -661,156 +712,7 @@ sap.ui.define([
                 }).catch((error) => {
                     console.log("Error fetching data:", error);
                 });
-
-                //---------------------------------------------------------------------------
-
-                // let oView = this.getView();
-
-                // oView.byId("articleContent").removeAllItems();
-
-                // let contentGuID = oView.getBindingContext().getObject().GuID;
-                // let sPath = oView.getModel().createKey("Articles", {
-                //     GuID: contentGuID
-                // });
-
-
-                // let oNewContentButton = new sap.m.Button({
-                //     text: "Add new textbox",
-                //     icon: "sap-icon://add",
-                //     press: function () {
-                //         let oRichText = new RichTextEditor({
-                //             width: "100%",
-                //             height: "450px",
-                //             showGroupFont: true,
-                //             id: "RichtextToSend" + Date.now()
-                //         });
-
-
-                //         let oVBoxContent = oView.byId("articleContent").getItems();
-                //         let oIndex = oVBoxContent.length;
-                //         oView.byId("articleContent").insertItem(oRichText, oIndex + 1);
-                //     }
-                // });
-
-                // oView.byId("articleContent").insertItem(oNewContentButton);
-
-
-                // let oNewCodeButton = new sap.m.Button({
-                //     text: "Add new codeeditor",
-                //     icon: "sap-icon://add",
-                //     press: function () {
-                //         let oCode = new sap.m.ComboBox({
-                //             id: "CodeTypeId" + Date.now(),
-                //             placeholder: "Choose programming language",
-                //             items: {
-                //                 path: "/codeCollection",
-                //                 template: new sap.ui.core.Item({
-                //                     key: "{key}",
-                //                     text: "{code}"
-                //                 })
-                //             }
-                //         });
-                //         let oCodeEditor = new sap.ui.codeeditor.CodeEditor({
-                //             width: "100%",
-                //             height: "300px",
-                //             id: "CodeToSend" + Date.now()
-                //         });
-
-                //         let oIndex = oVBoxContent.length;
-                //         let oModel = new sap.ui.model.json.JSONModel();
-                //         oModel.loadData("model/codecollection.json");
-                //         oModel.setSizeLimit(160);
-                //         oCode.setModel(oModel);
-
-                //         oCode.attachChange(function (oEvent) {
-                //             let oSelectedItem = oCode.getSelectedItem();
-                //             let sItemText = oSelectedItem.getText();
-                //             oCodeEditor.setType(sItemText);
-                //         });
-                //     }
-                // });
             },
         });
     });
 
-// renderDisplayControls: function (sContentPath, sCodePath) {
-//     //remove items so they are not displayed every time the page loads again
-//     let oView = this.getView();
-//     oView.byId("articleContent").removeAllItems();
-//     oView.byId("articleCode").removeAllItems();
-
-//                     //display Code value
-//                     this.getView().getModel().read(sCodePath, {
-//                         success: function (oData) {
-//                             for (let x = 0; x < oData.results.length; x++) {
-
-//                                 let oType = new sap.m.ComboBox({
-//                                     editable: false,
-//                                     value: "{CodeType}"
-//                                 });
-
-//                                 let oEditor = new sap.ui.codeeditor.CodeEditor({
-//                                     value: "{CodeValue}",
-//                                     type: "{CodeType}",
-//                                     editable: false,
-//                                     width: "100%",
-//                                     height: "300px"
-//                                 });
-
-//                                 //Create binding path
-//                                 const sCodePath = this.getView().getModel().createKey("CodeValue", {
-//                                     GuID: oData.results[x].GuID,
-//                                     ArticleGuID: oData.results[x].ArticleGuID
-//                                 });
-
-//                                 oType.bindElement("/" + sCodePath);
-//                                 oEditor.bindElement("/" + sCodePath);
-
-//                                 let iOrderIndex = oData.results[x].OrderIndex
-
-//                                 //Declaring variables here so VBox.length is counted again in every loop
-//                                 let oVBoxContent = oView.byId("articleCode").getItems();
-//                                 let oIndex = oVBoxContent.length;
-
-//                                 this.getView().byId("articleContent").insertItem(oType, iOrderIndex);
-//                                 this.getView().byId("articleContent").insertItem(oEditor,iOrderIndex);
-//                             }
-//                         }.bind(this),
-//                         error: function (oError) {
-//                             console.log(oError);
-//                         }
-//                     });
-
-//     // /Content(guid'xxx')
-//     this.getView().getModel().read(sContentPath, {
-//         success: function (oData) {
-//             for (let x = 0; x < oData.results.length; x++) {
-//                 let oFormattedText = new sap.m.FormattedText({
-//                     htmlText: "{ContentValue}",
-//                     width: "100%"
-//                 })
-
-//                 // Create binding path
-//                 const sContentPath = this.getView().getModel().createKey("ContentValue", {
-//                     GuID: oData.results[x].GuID,
-//                     ArticleGuID: oData.results[x].ArticleGuID
-//                 });
-
-//                 // Bind formatted text to content path
-//                 oFormattedText.bindElement("/" + sContentPath);
-
-//                 let iOrderIndex = oData.results[x].OrderIndex
-
-//                 // //Counting the index here will make sure it is recounted at every loop
-//                 // let oVBoxContent = oView.byId("articleContent").getItems();
-//                 // let oIndex = oVBoxContent.length;
-
-//                 // Add formatted text to vbox
-//                 this.getView().byId("articleContent").insertItem(oFormattedText, iOrderIndex);
-//             };
-//         }.bind(this),
-//         error: function (oError) {
-//             console.log(oError);
-//         }
-//     });
-// },
