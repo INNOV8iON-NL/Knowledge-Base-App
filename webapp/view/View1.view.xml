@@ -120,7 +120,7 @@
                             <cells>                            
                                 <List
                                     id="tagListId"
-                                    items="{ path: 'to_tags'}"
+                                    items="{ path: 'to_tags', templateShareable : false }"
                                     width="100%"
                                 >
                                     <DisplayListItem value="{TagName}" />
