@@ -124,30 +124,10 @@
                                 text="You can write and format your article content here. You can also add code snippets. Multiple text blocks and code snippets can be added in this step. "
                                 showIcon="true"
                             />
-                               <VBox 
-                            id="wizardVBoxId"
-                            >
+                            <VBox id="wizardVBoxId" />
 
-                         </VBox>
-
-                            <Button
-                                text="Add new text block"
-                                icon="sap-icon://add"
-                                type="Default"
-                                class="sapUiSmallMarginRight"
-                                iconFirst="false"
-                                press=".onCreateNewRichText"
-                            />
-                            <Button
-                                text="Add new code block"
-                                icon="sap-icon://add"
-                                type="Default"
-                                class="sapUiSmallMarginRight"
-                                iconFirst="false"
-                                press=".onCreateNewCodeEditor"
-                            />
+                            <HBox id="buttonContainerId" />
                         </WizardStep>
-
                     </Wizard>
                 </content>
             </Page>

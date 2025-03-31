@@ -624,6 +624,7 @@ sap.ui.define([
                 //aItems are the outer VBoxcontainer items (either richtext-container or codeeditor-container)
                 let iItemIndex = aItems[isCodeEditor ? 1 : 0].getBindingContext().getProperty('OrderIndex');
 
+                
                 if (OrderIndex < iItemIndex) {
                     iItemIndex += 1;
                     //Depending on the editor either aItems[1] = codeeditor, or aItems[0] = richtexteditor
