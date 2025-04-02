@@ -237,16 +237,14 @@ sap.ui.define([
 
             onCreateNewContent: function (oEvent, contentIndex, type) {
                 let oOuterBox = this.getView().byId("wizardVBoxId");
-                let oVBoxContent = oOuterBox.getItems();
-                let oIndex = oVBoxContent.length;
                 let oDate = Date.now();
                 let oView = this.getView();
                 let oContainer = oView.byId("buttonContainerId");
                 let oModel = this.getView().getModel();
+                let iNextIndex = contentIndex + 1;
 
-                //Destroy original two buttons
-                oContainer.destroyItems();
-
+                //Check vboxcontent now that it has at least one
+                let oVBoxContent = oOuterBox.getItems();
                 // Loop over container items and update the create buttons to pass new index
                 for (let x = 0; x < oVBoxContent.length; x++) {
                     //Get items for either richtext or code
@@ -259,6 +257,9 @@ sap.ui.define([
                         this.handleButtonUpdate(aItems, false, contentIndex); // Pass `false` for RichText
                     }
                 };
+
+                //Destroy original two buttons
+                oContainer.destroyItems();
 
                 if (type === "Richtext") { //create new richtext
                     let oContext = oModel.createEntry(this._sPath + "/to_contentValue", {
@@ -289,11 +290,13 @@ sap.ui.define([
                     });
 
                     oRichTextButton.attachPress((oEvent) => {
-                        this.onCreateNewContent(oEvent, contentIndex, "Richtext");
+                        //Pass next index number with button
+                        this.onCreateNewContent(oEvent, iNextIndex, "Richtext");
                     });
 
-                    oCodeButton.attachPress(function(){
-                        this.onCreateNewContent(oEvent, contentIndex, "Code");
+                    oCodeButton.attachPress(function () {
+                        //Pass next index number with button
+                        this.onCreateNewContent(oEvent, iNextIndex, "Code");
                     }, this)
 
                     let oRichText = new RichTextEditor({
@@ -309,14 +312,14 @@ sap.ui.define([
 
                     oRichText.setBindingContext(oContext);
                     oTextVBox.addStyleClass("sapUiLargeMarginBottom");
-                    oTextVBox.insertItem(oRichText, oIndex + 1);
-                    oTextVBox.insertItem(oButtonHBox, oIndex + 2);
+                    oTextVBox.insertItem(oRichText, 0);
+                    oTextVBox.insertItem(oButtonHBox, 1);
                     oButtonHBox.insertItem(oDeleteButton);
                     oButtonHBox.insertItem(oRichTextButton);
                     oButtonHBox.insertItem(oCodeButton);
                     this.getView().byId("wizardVBoxId").insertItem(oTextVBox);
-                } 
-                
+                }
+
                 else { //create new codeeditor
                     let oContext = oModel.createEntry(this._sPath + "/to_codeValue", {
                         properties: { CodeValue: "", CodeType: "", OrderIndex: contentIndex, ArticleGuID: "" }
@@ -377,11 +380,11 @@ sap.ui.define([
                     });
 
                     oRichTextButton.attachPress(function (oEvent) {
-                        this.onCreateNewContent(oEvent, contentIndex, "Richtext");
+                        this.onCreateNewContent(oEvent, iNextIndex, "Richtext");
                     }, this)
 
                     oCodeButton.attachPress(function (oEvent) {
-                        this.onCreateNewContent(oEvent, contentIndex, "Code");
+                        this.onCreateNewContent(oEvent, iNextIndex, "Code");
                     }, this)
 
                     oDeleteButton.attachPress((oEvent) => {
@@ -412,26 +415,31 @@ sap.ui.define([
                     let itemOrderIndex1 = oItem1.getBindingContext().getProperty('OrderIndex');
                     let itemOrderIndex2 = oItem2.getBindingContext().getProperty('OrderIndex');
 
-                    return itemOrderIndex2 - itemOrderIndex1;
+                    return itemOrderIndex1 - itemOrderIndex2;
                 });
                 oOuterBox.removeAllItems();  // Clear all items first
+
+                // newVBox.forEach(function (vbox) {
+                //     let oIndex = vbox.sId.includes("rich") ? vbox.getItems()[0].getBindingContext().getProperty('OrderIndex') : vbox.getItems()[1].getBindingContext().getProperty('OrderIndex');
+                //     console.log(oIndex);
+                // });
 
                 newVBox.forEach(function (vbox) {
                     oOuterBox.addItem(vbox);  // Add items back in sorted order
                 });
-                
+
             },
 
             // Helper function to decide if richtext or codeeditor buttons need to be updated
-            handleButtonUpdate: function (aItems, isCodeEditor, buttonIndex) {
+            handleButtonUpdate: function (aItems, isCodeEditor, buttonIndex) { 
                 //aItems are the outer VBoxcontainer items (either richtext-container or codeeditor-container)
                 let iItemIndex = aItems[isCodeEditor ? 1 : 0].getBindingContext().getProperty('OrderIndex');
 
                 if (buttonIndex <= iItemIndex) {
-                    let newItemIndex = iItemIndex + 1;
+                    let iCurrentIndex = iItemIndex + 1; 
                     //Depending on the editor either aItems[1] = codeeditor, or aItems[0] = richtexteditor
                     let sBindingPath = aItems[isCodeEditor ? 1 : 0].getBindingContext().getPath();
-                    aItems[isCodeEditor ? 1 : 0].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', newItemIndex);
+                    aItems[isCodeEditor ? 1 : 0].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', iCurrentIndex); 
 
                     //Depending on the editor access HBox for buttons 
                     let aHBox = aItems[isCodeEditor ? 2 : 1];
@@ -441,27 +449,30 @@ sap.ui.define([
                     let oNewCodeButton = new sap.m.Button({
                         text: "Add new codeeditor",
                         icon: "sap-icon://source-code",
-                        id: "CodeEditor" + Date.now() + newItemIndex
+                        id: "CodeEditor" + Date.now() + iCurrentIndex 
                     });
 
                     let oNewRichTextButton = new sap.m.Button({
                         text: "Add new textbox",
                         icon: "sap-icon://text",
-                        id: "RichText" + Date.now() + newItemIndex
+                        id: "RichText" + Date.now() + iCurrentIndex
                     });
 
                     aHBox.insertItem(oNewCodeButton, 0);
                     aHBox.insertItem(oNewRichTextButton, 1);
 
                     oNewCodeButton.attachPress((oEvent) => {
-                        this.onCreateNewContent(oEvent, newItemIndex, "Code");
+                        //Pass next index number with button
+                        this.onCreateNewContent(oEvent, iCurrentIndex + 1, "Code");
                     });
 
                     oNewRichTextButton.attachPress((oEvent) => {
-                        this.onCreateNewContent(oEvent, newItemIndex, "Richtext");
+                        //Pass next index number with button
+                        this.onCreateNewContent(oEvent, iCurrentIndex + 1, "Richtext");
                     })
-                }
+                } 
             },
+
 
             //----------------- Submit function  -------------------------
             handleWizardSubmit: function () {
@@ -479,25 +490,26 @@ sap.ui.define([
                     //Select Richtext editors from VBox items
                     if (oContentId.includes("rich")) {
 
-                        //Convert string to integer to match datatype in backend
-                        let iIndex = parseInt(oContentId.slice(17));
-
                         let oTextItems = oVBoxContent[x].getItems();
-
+                        let oRichContext = oTextItems[0].getBindingContext()
+                        let iIndex = oRichContext.getProperty('OrderIndex');
+                        let sContent = oRichContext.getProperty('ContentValue');
                         //push to array as 2. array to keep them together
-                        aContent.push([oTextItems[0].getValue(), iIndex]);
+                        aContent.push([sContent, iIndex]);
+                        //Delete first binding context 
+                        oRichContext.delete();
 
                         //Select codeEditor + type from VBox items
                     } else if (oContentId.includes("code")) {
                         let oCodeItems = oVBoxContent[x].getItems();
                         let type = oCodeItems[1].getType();
                         let code = oCodeItems[1].getValue();
-
-                        //Convert string to integer to match datatype in backend
-                        let iIndex = parseInt(oContentId.slice(17));
+                        let oCodeContext = oCodeItems[1].getBindingContext();
+                        let iIndex = oCodeContext.getProperty('OrderIndex');
 
                         //push to array as 2. array to keep them together
                         aCode.push([type, code, iIndex]);
+                        oCodeContext.delete();
                     }
                 }
 
@@ -548,7 +560,6 @@ sap.ui.define([
                             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/OrderIndex", aCode[y][2]);
                             this.getView().getModel().setProperty(oCodeEntry.getPath() + "/ArticleGuID", articleGuid);
                         };
-
 
                         this.getView().getModel().submitChanges({
                             success: function (oData) {
