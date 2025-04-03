@@ -156,7 +156,7 @@ sap.ui.define([
                                 }
                             });
                         }.bind(this),
-                        error: function () {
+                        error: function (oData) {
                             sap.m.MessageBox.error("Article could not be updated.");
                         }
                     }
@@ -396,6 +396,11 @@ sap.ui.define([
                         }
                     }
                 }
+
+                //Get new length of oElementsArr
+                let newElementsArr = oVBoxContainer.getItems();
+                //Check if there are any elements left
+                newElementsArr.length === 0 ? this.createInitialButtons() : ""
             },
 
             deleteNewContent: function (oContext, sVBoxId) {
@@ -410,8 +415,49 @@ sap.ui.define([
                 }
                 //Newly created context is deleted, so it won`t be sent to the backend
                 oContext.delete();
+
+                //Get new length of oElementsArr
+                let newElementsArr = oContainer.getItems();
+                //Check if there are any elements left
+                newElementsArr.length === 0 ? this.createInitialButtons() : ""
             },
 
+            createInitialButtons: function () {
+                let oContainer = this.getView().byId("articleContent");
+                let sArticleGuID = this._sArticleId;
+
+                let oButtonBox = new sap.m.HBox({
+                    id: "oButtonBox" + Date.now()
+                });
+
+                let oCodeButton = new sap.m.Button({
+                    text: "Add new codeeditor",
+                    icon: "sap-icon://source-code",
+                    id: "CodeEditor" + Date.now()
+                });
+
+                let oTextButton = new sap.m.Button({
+                    text: "Add new textbox",
+                    icon: "sap-icon://text",
+                    id: "RichText" + Date.now()
+                });
+
+                oButtonBox.insertItem(oTextButton);
+                oButtonBox.insertItem(oCodeButton);
+                oContainer.insertItem(oButtonBox);
+
+                oCodeButton.attachPress((oEvent) => {
+                    //Index start at 0
+                    this.createNewContent(oEvent, 0, sArticleGuID)
+                }
+                );
+
+                oTextButton.attachPress((oEvent) => {
+                    //Index start at 0
+                    this.createNewContent(oEvent, 0, sArticleGuID)
+                }
+                );
+            },
 
 
             createNewContent: function (oEvent, OrderIndex, ArticleGuID) {
@@ -419,6 +465,13 @@ sap.ui.define([
                 let aContainerItems = articleContent.getItems(); //gets richtext & codeeditor containers
                 let oModel = this.getView().getModel();
 
+                //Delete empty page create buttons if they are active
+                aContainerItems.forEach((vbox) => {
+                    if(vbox.sId.includes("oButtonBox")){
+                        vbox.destroyItems();
+                    }
+                });
+                
                 // Loop over container items and update the create buttons
                 for (let x = 0; x < aContainerItems.length; x++) {
                     //Get items for either richtext or codeeditor
@@ -430,6 +483,7 @@ sap.ui.define([
                         //In case of updating richtext buttons
                         this.handleContentCreation(aItems, OrderIndex, false, ArticleGuID); // Pass `false` for RichText
                     }
+
                 }
                 //Create new codeeditor
                 if (oEvent.getSource().sId.includes("CodeEditor")) {
@@ -604,15 +658,20 @@ sap.ui.define([
 
                 //Sort in ascending order
                 newVBox.sort(function (vbox1, vbox2) {
-                    //if it`s a richtext vbox, look for first item, if codeeditor vbox look for second
-                    let oItem1 = vbox1.sId.includes("RichText") ? vbox1.getItems()[0] : vbox1.getItems()[1];
-                    let oItem2 = vbox2.sId.includes("RichText") ? vbox2.getItems()[0] : vbox2.getItems()[1];
+                    // Check if vbox1 and vbox2 have items, then if it`s a richtext vbox, look for first item, if codeeditor vbox look for second
+                    let oItem1 = (vbox1.getItems().length > 0) ? (vbox1.sId.includes("RichText") ? vbox1.getItems()[0] : vbox1.getItems()[1]) : null;
+                    let oItem2 = (vbox2.getItems().length > 0) ? (vbox2.sId.includes("RichText") ? vbox2.getItems()[0] : vbox2.getItems()[1]) : null;
+                
+                    // Ensure both items exist and have a binding context
+                    if (oItem1 && oItem2 && oItem1.getBindingContext() && oItem2.getBindingContext()) {
+                        let itemOrderIndex1 = oItem1.getBindingContext().getProperty('OrderIndex');
+                        let itemOrderIndex2 = oItem2.getBindingContext().getProperty('OrderIndex');
+                        return itemOrderIndex1 - itemOrderIndex2;
+                    } else {
+                        return 0; 
+                    }
+                })
 
-                    let itemOrderIndex1 = oItem1.getBindingContext().getProperty('OrderIndex');
-                    let itemOrderIndex2 = oItem2.getBindingContext().getProperty('OrderIndex');
-
-                    return itemOrderIndex1 - itemOrderIndex2;
-                });
                 articleContent.removeAllItems();  // Clear all items first
                 newVBox.forEach(function (vbox) {
                     articleContent.addItem(vbox);  // Add items back in sorted order
@@ -624,7 +683,7 @@ sap.ui.define([
                 //aItems are the outer VBoxcontainer items (either richtext-container or codeeditor-container)
                 let iItemIndex = aItems[isCodeEditor ? 1 : 0].getBindingContext().getProperty('OrderIndex');
 
-                
+
                 if (OrderIndex < iItemIndex) {
                     iItemIndex += 1;
                     //Depending on the editor either aItems[1] = codeeditor, or aItems[0] = richtexteditor
@@ -696,6 +755,11 @@ sap.ui.define([
                 Promise.all([promise1, promise2]).then(([oCodeData, oContentData]) => {
                     // Merge the data based on OrderIndex
                     let combinedData = [...oCodeData, ...oContentData];
+
+                    //If there`s no content to be displayed, show two buttons that enable content creation
+                    if (combinedData.length === 0){
+                        this.createInitialButtons();
+                    }
 
                     // Sort combined data by OrderIndex
                     combinedData.sort((a, b) => a.OrderIndex - b.OrderIndex);
@@ -977,89 +1041,89 @@ sap.ui.define([
 // ------------ old way to update buttons
 
 
-                // for (let x = 0; x < aContainerItems.length; x++) {
-                //     //Separate codeeditor
-                //     if (aContainerItems[x].sId.includes("CodeEditor")) {
-                //         let aCodeItems = aContainerItems[x].getItems();
-                //         //Get index of codeeditor
-                //         let iItemIndex = aCodeItems[1].getBindingContext().getProperty('OrderIndex');
+// for (let x = 0; x < aContainerItems.length; x++) {
+//     //Separate codeeditor
+//     if (aContainerItems[x].sId.includes("CodeEditor")) {
+//         let aCodeItems = aContainerItems[x].getItems();
+//         //Get index of codeeditor
+//         let iItemIndex = aCodeItems[1].getBindingContext().getProperty('OrderIndex');
 
-                //         if (OrderIndex < iItemIndex) {
-                //             iItemIndex += 1;
-                //             //Get path for codeeditor
-                //             let sBindingPath = aCodeItems[1].getBindingContext().getPath();
-                //             //Set new index for codeeditor
-                //             aCodeItems[1].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', iItemIndex)
+//         if (OrderIndex < iItemIndex) {
+//             iItemIndex += 1;
+//             //Get path for codeeditor
+//             let sBindingPath = aCodeItems[1].getBindingContext().getPath();
+//             //Set new index for codeeditor
+//             aCodeItems[1].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', iItemIndex)
 
-                //             //get hold of ButtonBox
-                //             let aHBox = aCodeItems[2];
-                //             //delete old create button
-                //             aHBox.getItems()[1].destroy();
-                //             aHBox.getItems()[0].destroy();
+//             //get hold of ButtonBox
+//             let aHBox = aCodeItems[2];
+//             //delete old create button
+//             aHBox.getItems()[1].destroy();
+//             aHBox.getItems()[0].destroy();
 
-                //             //Recreate create buttons that stores the new itemindex
-                //             let oNewCodeButton = new sap.m.Button({
-                //                 text: "Add new codeeditor",
-                //                 icon: "sap-icon://source-code",
-                //                 id: "CodeEditor" + Date.now() + iItemIndex
-                //             });
+//             //Recreate create buttons that stores the new itemindex
+//             let oNewCodeButton = new sap.m.Button({
+//                 text: "Add new codeeditor",
+//                 icon: "sap-icon://source-code",
+//                 id: "CodeEditor" + Date.now() + iItemIndex
+//             });
 
-                //             let oNewRichTextButton = new sap.m.Button({
-                //                 text: "Add new textbox",
-                //                 icon: "sap-icon://text",
-                //                 id: "RichText" + Date.now() + iItemIndex
-                //             });
+//             let oNewRichTextButton = new sap.m.Button({
+//                 text: "Add new textbox",
+//                 icon: "sap-icon://text",
+//                 id: "RichText" + Date.now() + iItemIndex
+//             });
 
-                //             aHBox.insertItem(oNewCodeButton, 0);
-                //             aHBox.insertItem(oNewRichTextButton, 1);
-                //             oNewCodeButton.attachPress(function (oEvent) {
-                //                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
-                //             }, this);
-                //             oNewRichTextButton.attachPress(function (oEvent) {
-                //                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
-                //             }, this);
-                //         }
-                //     }
-                //     //Separate richtext
-                //     else {
-                //         let aContentItems = aContainerItems[x].getItems();
-                //         //Get index of richtext
-                //         let iItemIndex = aContentItems[0].getBindingContext().getProperty('OrderIndex');
+//             aHBox.insertItem(oNewCodeButton, 0);
+//             aHBox.insertItem(oNewRichTextButton, 1);
+//             oNewCodeButton.attachPress(function (oEvent) {
+//                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
+//             }, this);
+//             oNewRichTextButton.attachPress(function (oEvent) {
+//                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
+//             }, this);
+//         }
+//     }
+//     //Separate richtext
+//     else {
+//         let aContentItems = aContainerItems[x].getItems();
+//         //Get index of richtext
+//         let iItemIndex = aContentItems[0].getBindingContext().getProperty('OrderIndex');
 
-                //         if (OrderIndex < iItemIndex) {
-                //             iItemIndex += 1;
-                //             //Get path for richtext
-                //             let sBindingPath = aContentItems[0].getBindingContext().getPath();
-                //             //Set new index for richtext
-                //             aContentItems[0].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', iItemIndex)
+//         if (OrderIndex < iItemIndex) {
+//             iItemIndex += 1;
+//             //Get path for richtext
+//             let sBindingPath = aContentItems[0].getBindingContext().getPath();
+//             //Set new index for richtext
+//             aContentItems[0].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', iItemIndex)
 
-                //             //get hold of ButtonBox
-                //             let aHBox = aContentItems[1];
-                //             //delete old create button 
-                //             aHBox.getItems()[1].destroy();
-                //             aHBox.getItems()[0].destroy();
+//             //get hold of ButtonBox
+//             let aHBox = aContentItems[1];
+//             //delete old create button
+//             aHBox.getItems()[1].destroy();
+//             aHBox.getItems()[0].destroy();
 
-                //             //Recreate create button that stores the new itemindex
-                //             let oNewCodeButton = new sap.m.Button({
-                //                 text: "Add new codeeditor",
-                //                 icon: "sap-icon://source-code",
-                //                 id: "CodeEditor" + Date.now() + iItemIndex
-                //             });
+//             //Recreate create button that stores the new itemindex
+//             let oNewCodeButton = new sap.m.Button({
+//                 text: "Add new codeeditor",
+//                 icon: "sap-icon://source-code",
+//                 id: "CodeEditor" + Date.now() + iItemIndex
+//             });
 
-                //             let oNewRichTextButton = new sap.m.Button({
-                //                 text: "Add new textbox",
-                //                 icon: "sap-icon://text",
-                //                 id:  "RichText" + Date.now() + iItemIndex
-                //             });
+//             let oNewRichTextButton = new sap.m.Button({
+//                 text: "Add new textbox",
+//                 icon: "sap-icon://text",
+//                 id:  "RichText" + Date.now() + iItemIndex
+//             });
 
-                //             aHBox.insertItem(oNewCodeButton, 0);
-                //             aHBox.insertItem(oNewRichTextButton, 1);
-                //             oNewCodeButton.attachPress(function (oEvent) {
-                //                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
-                //             }, this);
-                //             oNewRichTextButton.attachPress(function (oEvent) {
-                //                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
-                //             }, this);
-                //         }
-                //     }
-                // }
+//             aHBox.insertItem(oNewCodeButton, 0);
+//             aHBox.insertItem(oNewRichTextButton, 1);
+//             oNewCodeButton.attachPress(function (oEvent) {
+//                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
+//             }, this);
+//             oNewRichTextButton.attachPress(function (oEvent) {
+//                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
+//             }, this);
+//         }
+//     }
+// }

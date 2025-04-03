@@ -198,7 +198,9 @@ sap.ui.define([
                 let oWizard = this.getView().byId("newArticleWizard");
                 let oFirstStep = oWizard.getSteps()[0];
                 let oVBoxContent = this.getView().byId("wizardVBoxId").removeAllItems();
+                let oContainer = this.getView().byId("buttonContainerId");
 
+                oContainer.destroyItems();
                 oWizard.discardProgress(oFirstStep);
                 oWizard.goToStep(oFirstStep);
 
@@ -222,14 +224,12 @@ sap.ui.define([
                 let oView = this.getView();
                 let oElementsArr = oView.byId("wizardVBoxId");
                 let oElement = oElementsArr.getItems();
-                console.log(oContext);
 
                 for (let x = 0; x < oElement.length; x++) {
                     //If Id contains oDate, remove from view
                     if (oElement[x].sId.includes(oId)) {
                         oElementsArr.removeItem(oElement[x]);
-                        oContext.delete()
-
+                        oContext.delete();
                     }
                 };
                 //Get new length of oElementsArr
@@ -245,9 +245,8 @@ sap.ui.define([
                 let oContainer = oView.byId("buttonContainerId");
                 let oModel = this.getView().getModel();
                 let iNextIndex = contentIndex + 1;
-
-                //Check vboxcontent now that it has at least one
                 let oVBoxContent = oOuterBox.getItems();
+
                 // Loop over container items and update the create buttons to pass new index
                 for (let x = 0; x < oVBoxContent.length; x++) {
                     //Get items for either richtext or code
@@ -265,6 +264,7 @@ sap.ui.define([
                 oContainer.destroyItems();
 
                 if (type === "Richtext") { //create new richtext
+                    //Creating context here ensures that the OrderIndex value can be updated dynamically
                     let oContext = oModel.createEntry(this._sPath + "/to_contentValue", {
                         properties: { ContentValue: "", OrderIndex: contentIndex, ArticleGuID: "" }
                     });
@@ -324,6 +324,7 @@ sap.ui.define([
                 }
 
                 else { //create new codeeditor
+                    //Creating context here ensures that the OrderIndex value can be updated dynamically
                     let oContext = oModel.createEntry(this._sPath + "/to_codeValue", {
                         properties: { CodeValue: "", CodeType: "", OrderIndex: contentIndex, ArticleGuID: "" }
                     });
@@ -395,7 +396,6 @@ sap.ui.define([
                     });
 
                     oTextVBox.setBindingContext(oContext);
-
                     oTextVBox.addStyleClass("sapUiLargeMarginBottom");
                     oTextVBox.insertItem(oButtonHBox);
                     oTextVBox.insertItem(oEditor);
@@ -422,11 +422,6 @@ sap.ui.define([
                 });
                 oOuterBox.removeAllItems();  // Clear all items first
 
-                // newVBox.forEach(function (vbox) {
-                //     let oIndex = vbox.sId.includes("rich") ? vbox.getItems()[0].getBindingContext().getProperty('OrderIndex') : vbox.getItems()[1].getBindingContext().getProperty('OrderIndex');
-                //     console.log(oIndex);
-                // });
-
                 newVBox.forEach(function (vbox) {
                     oOuterBox.addItem(vbox);  // Add items back in sorted order
                 });
@@ -434,15 +429,15 @@ sap.ui.define([
             },
 
             // Helper function to decide if richtext or codeeditor buttons need to be updated
-            handleButtonUpdate: function (aItems, isCodeEditor, buttonIndex) { 
+            handleButtonUpdate: function (aItems, isCodeEditor, buttonIndex) {
                 //aItems are the outer VBoxcontainer items (either richtext-container or codeeditor-container)
                 let iItemIndex = aItems[isCodeEditor ? 1 : 0].getBindingContext().getProperty('OrderIndex');
 
                 if (buttonIndex <= iItemIndex) {
-                    let iCurrentIndex = iItemIndex + 1; 
+                    let iCurrentIndex = iItemIndex + 1;
                     //Depending on the editor either aItems[1] = codeeditor, or aItems[0] = richtexteditor
                     let sBindingPath = aItems[isCodeEditor ? 1 : 0].getBindingContext().getPath();
-                    aItems[isCodeEditor ? 1 : 0].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', iCurrentIndex); 
+                    aItems[isCodeEditor ? 1 : 0].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', iCurrentIndex);
 
                     //Depending on the editor access HBox for buttons 
                     let aHBox = aItems[isCodeEditor ? 2 : 1];
@@ -452,7 +447,7 @@ sap.ui.define([
                     let oNewCodeButton = new sap.m.Button({
                         text: "Add new codeeditor",
                         icon: "sap-icon://source-code",
-                        id: "CodeEditor" + Date.now() + iCurrentIndex 
+                        id: "CodeEditor" + Date.now() + iCurrentIndex
                     });
 
                     let oNewRichTextButton = new sap.m.Button({
@@ -473,7 +468,7 @@ sap.ui.define([
                         //Pass next index number with button
                         this.onCreateNewContent(oEvent, iCurrentIndex + 1, "Richtext");
                     })
-                } 
+                }
             },
 
 
@@ -499,7 +494,7 @@ sap.ui.define([
                         let sContent = oRichContext.getProperty('ContentValue');
                         //push to array as 2. array to keep them together
                         aContent.push([sContent, iIndex]);
-                        //Delete first binding context 
+                        //Delete first binding context to make sure it doesn`t generate errors
                         oRichContext.delete();
 
                         //Select codeEditor + type from VBox items
@@ -512,6 +507,7 @@ sap.ui.define([
 
                         //push to array as 2. array to keep them together
                         aCode.push([type, code, iIndex]);
+                        //Delete first binding context to make sure it doesn`t generate errors
                         oCodeContext.delete();
                     }
                 }
