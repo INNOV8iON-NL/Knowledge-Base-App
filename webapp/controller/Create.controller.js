@@ -217,16 +217,19 @@ sap.ui.define([
                 // this.getView().byId("richtextEditorId").setValue("");
             },
 
-            deleteContent: function (oEvent) {
+            deleteContent: function (oEvent, oContext) {
                 let oId = oEvent.getSource().sId.slice(10, 23);
                 let oView = this.getView();
                 let oElementsArr = oView.byId("wizardVBoxId");
                 let oElement = oElementsArr.getItems();
+                console.log(oContext);
 
                 for (let x = 0; x < oElement.length; x++) {
                     //If Id contains oDate, remove from view
                     if (oElement[x].sId.includes(oId)) {
                         oElementsArr.removeItem(oElement[x]);
+                        oContext.delete()
+
                     }
                 };
                 //Get new length of oElementsArr
@@ -307,7 +310,7 @@ sap.ui.define([
                     });
 
                     oDeleteButton.attachPress((oEvent) => {
-                        this.deleteContent(oEvent, contentIndex);
+                        this.deleteContent(oEvent, oContext);
                     });
 
                     oRichText.setBindingContext(oContext);
@@ -388,7 +391,7 @@ sap.ui.define([
                     }, this)
 
                     oDeleteButton.attachPress((oEvent) => {
-                        this.deleteContent(oEvent)
+                        this.deleteContent(oEvent, oContext)
                     });
 
                     oTextVBox.setBindingContext(oContext);
