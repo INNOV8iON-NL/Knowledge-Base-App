@@ -476,10 +476,11 @@ sap.ui.define([
                 for (let x = 0; x < aContainerItems.length; x++) {
                     //Get items for either richtext or codeeditor
                     let aItems = aContainerItems[x].getItems();
+                    console.log(aItems);
                     if (aContainerItems[x].sId.includes("CodeEditor")) {
                         //In case of updating codeeditor buttons
                         this.handleContentCreation(aItems, OrderIndex, true, ArticleGuID); // Pass `true` for CodeEditor
-                    } else {
+                    } else if (aContainerItems[x].sId.includes("RichText")){
                         //In case of updating richtext buttons
                         this.handleContentCreation(aItems, OrderIndex, false, ArticleGuID); // Pass `false` for RichText
                     }

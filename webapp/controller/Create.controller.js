@@ -251,6 +251,7 @@ sap.ui.define([
                 for (let x = 0; x < oVBoxContent.length; x++) {
                     //Get items for either richtext or code
                     let aItems = oVBoxContent[x].getItems();
+                    console.log(aItems);
                     if (oVBoxContent[x].sId.includes("code")) {
                         //In case of updating codeeditor buttons
                         this.handleButtonUpdate(aItems, true, contentIndex); // Pass `true` for CodeEditor
