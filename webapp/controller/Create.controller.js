@@ -13,9 +13,6 @@ sap.ui.define([
 
             //Variable for checking if inputs are valid
             _isValid: "",
-            // _iOrderIndex: 0,
-
-
             onInit: function () {
                 var oRouter = this.getRouter();
                 oRouter.getRoute("create").attachMatched(this._onObjectMatched, this);
@@ -36,25 +33,17 @@ sap.ui.define([
                 this.getView().byId("articleTitleId").setValueState("None");
                 this.getView().byId("descriptionId").setValueState("None");
 
-                // const mainButton = sap.ui.getCore().byId('backBtn');
-
                 oView.bindElement({
                     path: sPath
                 });
 
                 this._sPath = sPath;
 
-                // oRichText.bindElement({
-                //     path: "/" + sPath + "/to_content"
-                // })
-
                 oView.byId("multiInputId").removeAllTokens();
                 this.resetWizard();
-                //this.onCreateNewRichText();
                 oFinishButton.setFinishButtonText("Submit");
                 oMultiInput.attachBrowserEvent('mouseout', (oEvent) => {
                     if (oMultiInput.getTokens().length < 1) {
-                       // oMultiInput.setValueState("Error");
                         this.getView().byId("newArticleWizard").invalidateStep(this.getView().byId("TitleStep"));
                     }
                 })
@@ -177,7 +166,6 @@ sap.ui.define([
             },
 
             discardProgress: function () {
-                // this.resetWizard();
                 MessageBox.warning("Leaving the page now will discard any changes made to the article. Continue?", {
                     actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
                     emphasizedAction: MessageBox.Action.CANCEL,
@@ -201,26 +189,19 @@ sap.ui.define([
                 this.getView().getModel().resetChanges();
                 let oWizard = this.getView().byId("newArticleWizard");
                 let oFirstStep = oWizard.getSteps()[0];
-                let oVBoxContent = this.getView().byId("wizardVBoxId").removeAllItems();
                 let oContainer = this.getView().byId("buttonContainerId");
-
+                this.getView().byId("wizardVBoxId").removeAllItems();
                 oContainer.destroyItems();
                 oWizard.discardProgress(oFirstStep);
                 oWizard.goToStep(oFirstStep);
 
                 this.getView().byId("multiInputId").removeAllTokens();
-                //this.getView().byId("multiInputId").setValueState("Error");
-                // this.getView().byId("comboBoxId").setSelectedKey("");
                 this.getView().byId("newArticleWizard").invalidateStep(this.getView().byId("TitleStep"));
                 this.getView().byId("newArticleWizard").invalidateStep(this.getView().byId("ContentStep"));
-                //this.getView().byId("descriptionId").setValueState("Error");
                 this.getView().byId("descriptionId").setValue("");
-                //this.getView().byId("articleTitleId").setValueState("Error");
                 this.getView().byId("articleTitleId").setValue("");
                 this.createInitialButtons();
                 this._iOrderIndex = 0;
-                // this.getView().byId("richtextEditorId").addStyleClass("richtextWarning");
-                // this.getView().byId("richtextEditorId").setValue("");
             },
 
             deleteContent: function (oEvent, oContext) {
@@ -238,7 +219,7 @@ sap.ui.define([
                 };
                 //Get new length of oElementsArr
                 let newElementsArr = oElementsArr.getItems();
-                //Check if there are any elements left
+                //Check if there are any elements left, if no, show the two creation buttons
                 newElementsArr.length === 0 ? this.createInitialButtons() : ""
             },
 
@@ -480,7 +461,6 @@ sap.ui.define([
             //----------------- Submit function  -------------------------
             handleWizardSubmit: function () {
                 let oValidFirstStep = this.validateArticleWizard();
-                //let oValidSecondStep = this.validateContentWizard();
                 let oVBoxContent = this.getView().byId("wizardVBoxId").getItems();
                 const allTokens = this.getView().byId("multiInputId").getTokens();
                 const tokenTextArr = [];
@@ -523,12 +503,8 @@ sap.ui.define([
                     tokenTextArr.push(tokenText);
                 };
 
-                //const oContent = this.getView().byId("richtextEditorId").getValue();
-
                 //Validation
-                if (oValidFirstStep === false
-                    //|| oValidSecondStep === false
-                ) {
+                if (oValidFirstStep === false) {
                     //show an error message, rest of code will not execute.
                     MessageBox.warning("Some information is still missing. Please inspect the form again.");
                     return false;

@@ -45,7 +45,6 @@ sap.ui.define([
                 let bSelected = (aContexts && aContexts.length > 0);
                 let sText = (bSelected) ? aContexts.length + " selected" : null;
                 oDeleteButton.setVisible(bSelected);
-                //oLabel.setText(sText);
             },
 
             //----------------- Go to create -------------------------    

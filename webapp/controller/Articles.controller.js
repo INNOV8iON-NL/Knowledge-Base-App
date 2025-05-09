@@ -34,6 +34,7 @@ sap.ui.define([
                 let sContentPath = "/Articles(guid'" + this._sArticleId + "')" + "/to_contentValue";
                 let sCodePath = "/Articles(guid'" + this._sArticleId + "')" + "/to_codeValue";
 
+
                 this.renderDisplayControls(sContentPath, sCodePath);
 
                 oView.bindElement({
@@ -62,22 +63,6 @@ sap.ui.define([
                 this.getView().byId("multiInputId2").setVisible(false);
                 this._isEditing = false;
                 this.getView().getModel().resetChanges();
-
-                // this.onCancel();
-
-                //  Manipulate the main nav button to warn user about data loss
-                // sap.ui.getCore().byId('backBtn').attachPress(this.mainNavPress, this);
-
-                //  Press event needs to be detached so it`s not giving a warning for pressing other pages` nav buttons
-                this.oView.addEventDelegate({
-                    onBeforeHide: function (oEvent) {
-
-                        //Reset possible changes and input states
-                        // this.onCancel();
-
-                        // sap.ui.getCore().byId('backBtn').detachPress(this.mainNavPress, this);
-                    }
-                }, this)
             },
 
             _onBindingChange: function () {
@@ -186,7 +171,6 @@ sap.ui.define([
             },
 
             onSaveChanges: function (oEvent) {
-                //this._isValid = true;
                 const sGuID = this.getView().getBindingContext().getObject().GuID;
                 const sPath = `/Articles(guid'${sGuID}')`;
                 let requiredInputs = this.returnIdListOfRequiredFields();
@@ -246,7 +230,6 @@ sap.ui.define([
             validateEventFeedbackForm: function (requiredInputs) {
                 let _self = this;
                 let valid = true;
-                // let richText = this.getView().byId("richTextId");
 
                 requiredInputs.forEach(function (input) {
                     let sInput = _self.getView().byId(input);
@@ -258,16 +241,8 @@ sap.ui.define([
                         sInput.setValueState("None");
                     }
                 });
-
-                //Richtext needs separate validation since it has no valuestate property
-                // if (richText.getValue() == "" || richText.getValue() == undefined) {
-                //     valid = false;
-                //     richText.addStyleClass("richtextWarning");
-                // }
                 return valid;
             },
-
-
 
             //----------------- Cancel edit ------------------------- 
 
@@ -300,7 +275,6 @@ sap.ui.define([
                 this.getView().byId("titleContainer").setVisible(false);
                 this.getView().byId("titleValue").setValueState("None");
                 this.getView().byId("descValue").setValueState("None");
-                // this.getView().byId("richTextId").removeStyleClass("richtextWarning");
                 this.getView().byId("editButton").setVisible(true);
                 this.getView().byId("saveButton").setVisible(false);
                 this.getView().byId("cancelButton").setVisible(false);
@@ -315,7 +289,6 @@ sap.ui.define([
                         oMultiInput.removeToken(oTokens[x]);
                     }
                 }
-
                 this.renderDisplayControls(sContentPath, sCodePath);
 
                 //Refresh window so possible modifications disappear
@@ -858,8 +831,6 @@ sap.ui.define([
                     // Sort combined data by OrderIndex
                     combinedData.sort((a, b) => a.OrderIndex - b.OrderIndex);
 
-                    
-
                     let aIndexes = [];
 
                     combinedData.map((data) => aIndexes.push(data.OrderIndex));
@@ -1023,14 +994,6 @@ sap.ui.define([
                     });
 
                     oTagData.forEach((tag)=> {
-                        // const sCodePath = this.getView().getModel().createKey("CodeValue", {
-                        //     GuID: data.GuID,
-                        //     ArticleGuID: data.ArticleGuID
-                        // });
-
-                        // oType.bindElement("/" + sCodePath);
-                        // oEditor.bindElement("/" + sCodePath);
-
                         let oMultiInput = this.getView().byId("multiInputId2");
                         let originalToken = new sap.m.Token({text: tag.TagName, id: "tag" + tag.GuID, key: tag.GuID });
                         oMultiInput.addToken(originalToken);
