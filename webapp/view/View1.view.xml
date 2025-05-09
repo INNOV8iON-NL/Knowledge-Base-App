@@ -19,6 +19,12 @@
             >
                 <smartFilterBar:controlConfiguration>
                     <smartFilterBar:ControlConfiguration
+                        key="CodeValue"
+                        index="4"
+                        visible="false"
+                    />
+
+                    <smartFilterBar:ControlConfiguration
                         key="Title"
                         index="1"
                         visible="true"
@@ -48,13 +54,14 @@
                 entitySet="Articles"
                 smartFilterId="smartFilterId"
                 tableType="ResponsiveTable"
-                useVariantManagement="true"
+                useVariantManagement="false"
                 useTablePersonalisation="true"
                 header="Articles"
                 showFullScreenButton="true"
                 showRowCount="true"
                 persistencyKey="SmartTableAnalytical_Explored"
                 enableAutoBinding="true"
+                enableExport="false"
                 class="sapUiContentPadding"
                 initiallyVisibleFields="Title,LastChangedAt,CreatedBy,Description,Category"
                 requestAtLeastFields="GuID"

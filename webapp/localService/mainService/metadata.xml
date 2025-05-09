@@ -48,8 +48,8 @@
                 <Property Name="Update_mc" Type="Edm.Boolean" sap:label="Dyn. Method Control" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
                 <Property Name="GuID" Type="Edm.Guid" Nullable="false" sap:label="UUID" sap:quickinfo="16 Byte UUID in 16 Bytes (Raw Format)" sap:creatable="false" sap:updatable="false"/>
                 <Property Name="ArticleGuID" Type="Edm.Guid" Nullable="false" sap:label="UUID" sap:quickinfo="16 Byte UUID in 16 Bytes (Raw Format)" sap:creatable="false" sap:updatable="false"/>
-                <Property Name="CodeValue" Type="Edm.String" MaxLength="100000" sap:label="Code snippet" sap:quickinfo="Store codesnippets"/>
-                <Property Name="CodeType" Type="Edm.String" MaxLength="50"/>
+                <Property Name="CodeValue" Type="Edm.String" MaxLength="100000" sap:label="Code snippet" sap:quickinfo="Store codesnippets" filterable="false" />
+                <Property Name="CodeType" Type="Edm.String" MaxLength="50" filterable="false" />
                 <Property Name="local_last_changed_by" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:label="Changed By" sap:quickinfo="Local Instance Last Changed By User" sap:creatable="false" sap:updatable="false"/>
                 <Property Name="local_last_changed_at" Type="Edm.DateTimeOffset" Precision="7" sap:label="Changed On" sap:quickinfo="Local Instance Last Change Date Time" sap:creatable="false" sap:updatable="false"/>
                 <Property Name="last_changed_at" Type="Edm.DateTimeOffset" Precision="7" sap:label="Changed On" sap:quickinfo="Last Change Date Time"/>
@@ -101,8 +101,8 @@
                 <Property Name="CreatedBy" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:label="Created By" sap:quickinfo="Created By User" sap:creatable="false" sap:updatable="false"/>
                 <Property Name="CreatedAt" Type="Edm.DateTimeOffset" Precision="7" sap:label="Created On" sap:quickinfo="Creation Date Time" sap:creatable="false" sap:updatable="false"/>
                 <Property Name="LastChangedAt" Type="Edm.DateTimeOffset" Precision="7" sap:label="Changed On" sap:quickinfo="Last Change Date Time" sap:creatable="false" sap:updatable="false"/>
-                <Property Name="Code" Type="Edm.String" MaxLength="100000" sap:label="Code snippet" sap:quickinfo="Store codesnippets"/>
-                <Property Name="CodeType" Type="Edm.String" MaxLength="100"/>
+                <Property Name="Code" Type="Edm.String" MaxLength="100000" sap:label="Code snippet" sap:quickinfo="Store codesnippets" filterable="false" />
+                <Property Name="CodeType" Type="Edm.String" MaxLength="100" filterable="false" />
                 <NavigationProperty Name="to_codeValue" Relationship="cds_zknowledge_ui_articles_o4.assoc_A15DE07FC848C9ADB2E9D6EE0B3F4F9C" FromRole="FromRole_assoc_A15DE07FC848C9ADB2E9D6EE0B3F4F9C" ToRole="ToRole_assoc_A15DE07FC848C9ADB2E9D6EE0B3F4F9C"/>
                 <NavigationProperty Name="to_contentValue" Relationship="cds_zknowledge_ui_articles_o4.assoc_72459A0337B6DF034B4CCAD43D58BFD9" FromRole="FromRole_assoc_72459A0337B6DF034B4CCAD43D58BFD9" ToRole="ToRole_assoc_72459A0337B6DF034B4CCAD43D58BFD9"/>
                 <NavigationProperty Name="to_tags" Relationship="cds_zknowledge_ui_articles_o4.assoc_0078FDDE00C42CB24B47170954275428" FromRole="FromRole_assoc_0078FDDE00C42CB24B47170954275428" ToRole="ToRole_assoc_0078FDDE00C42CB24B47170954275428"/>
@@ -448,7 +448,8 @@
                                 <PropertyPath>Update_mc</PropertyPath>
                                 <PropertyPath>to_codeValue_oc</PropertyPath>
                                 <PropertyPath>to_contentValue_oc</PropertyPath>
-                            </Collection>
+                                <<PropertyPath>CodeType</PropertyPath>
+              >              </Collection>
                         </PropertyValue>
                         <PropertyValue Property="FilterExpressionRestrictions">
                             <Collection>
@@ -523,6 +524,7 @@
                             <Collection>
                                 <PropertyPath>Delete_mc</PropertyPath>
                                 <PropertyPath>Update_mc</PropertyPath>
+                                <PropertyPath>CodeType</PropertyPath>
                             </Collection>
                         </PropertyValue>
                         <PropertyValue Property="FilterExpressionRestrictions">
