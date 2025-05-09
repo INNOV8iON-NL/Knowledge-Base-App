@@ -137,10 +137,48 @@
                     <Title
                         text="Category"
                         class="sapUiTinyMarginBottom"
+                        
                     />
-                    <List items="{to_tags}">
+                    <List items="{to_tags}" id="CategoryList">
                         <DisplayListItem value="{TagName}" />
                     </List>
+
+                     <MultiInput
+                                        suggestionItemSelected=".validateArticleWizard"
+                                        change=".tokenChange"
+                                        tokenUpdate=".tokenDelete"
+                                        id="multiInputId2"
+                                        width="350px"
+                                        visible="false"
+                                        showValueHelp="false"
+                                        placeholder="You can choose multiple categories. Enter values like Frontend, ABAP, etc.."
+                                        suggestionItems="{
+				                            path: '/UniqueTags',
+				                            sorter: { path: 'TagName' }
+			                                            }"
+                                        suggestionRows="{/TagName}"
+                                    >
+                                        <suggestionColumns>
+                                            <Column
+                                                hAlign="Begin"
+                                                popinDisplay="Inline"
+                                                demandPopin="true"
+                                            >
+                                                <Label text="Name" />
+                                            </Column>
+                                        </suggestionColumns>
+                                        <suggestionRows>
+                                            <ColumnListItem>
+                                                <cells>
+                                                    <Label text="{TagName}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </suggestionRows>
+                                        <core:Item
+                                            key="{TagName}"
+                                            text="{TagName}"
+                                        />
+                                    </MultiInput>
                 </VBox>
             </HeaderContainer>
         </uxap:headerContent>

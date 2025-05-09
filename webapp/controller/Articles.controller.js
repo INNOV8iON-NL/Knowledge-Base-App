@@ -4,9 +4,10 @@ sap.ui.define([
     "sap/m/FormattedText",
     "sap/ui/richtexteditor/RichTextEditor",
     "sap/ui/codeeditor/CodeEditor",
-    "sap/m/VBox"
+    "sap/m/VBox",
+    "sap/m/Tokenizer"
 ],
-    function (Controller, FormattedText, MessageBox, RichTextEditor, CodeEditor, VBox) {
+    function (Controller, FormattedText, MessageBox, RichTextEditor, CodeEditor, VBox, Tokenizer) {
         "use strict";
 
         return Controller.extend("articlesfreestyle.controller.Articles", {
@@ -57,6 +58,8 @@ sap.ui.define([
                 this.getView().byId("editButton").setVisible(true);
                 this.getView().byId("saveButton").setVisible(false);
                 this.getView().byId("cancelButton").setVisible(false);
+                this.getView().byId("CategoryList").setVisible(true);
+                this.getView().byId("multiInputId2").setVisible(false);
                 this._isEditing = false;
                 this.getView().getModel().resetChanges();
 
@@ -111,14 +114,75 @@ sap.ui.define([
             //----------------- Edit functions ------------------------- 
 
             onEdit: function () {
+                const oMultiInput = this.getView().byId("multiInputId2");
                 this.getView().byId("descText").setVisible(false);
                 this.getView().byId("descValue").setVisible(true);
                 this.getView().byId("titleContainer").setVisible(true);
                 this.getView().byId("editButton").setVisible(false);
                 this.getView().byId("saveButton").setVisible(true);
                 this.getView().byId("cancelButton").setVisible(true);
+                this.getView().byId("CategoryList").setVisible(false);
+                oMultiInput.setVisible(true);
+                let oTokens = oMultiInput.getTokens();
                 this.renderEditControls();
                 this._isEditing = true;
+
+                //Remove all the tokens that could be leftover after the previous editing
+                for(let x = 0; x < oTokens.length; x++){
+                    if( !oTokens[x].sId.includes('tag')){
+                        oMultiInput.removeToken(oTokens[x]);
+                    }
+                }
+            },
+
+            tokenChange: function (oEvent) {
+                const sValue = oEvent.getParameter("value").trim().toUpperCase();
+                const tokens = [];
+                tokens.push(sValue);
+                const oMultiInput = this.getView().byId("multiInputId2");
+                const oBinding = oMultiInput.getBindingContext().getObject();
+                let oModel = this.getView().getModel();
+                const allitems = oMultiInput.getTokens();
+
+                //create tokens for the input
+                for (let i = 0; i < tokens.length; i++) {
+                    let newToken = new sap.m.Token({
+                        text: tokens[i]
+                    });
+                    oMultiInput.addToken(newToken);
+                    let oContext = oModel.createEntry("/Tags", {
+                        properties: { TagName: tokens[i], ArticleguID: this._sArticleId  }
+                    });
+
+                    oMultiInput.setBindingContext(oContext);
+
+                };
+                const allitems2 = oMultiInput.getTokens();
+                //set inputvalue to 0 so text value dissappears
+                oMultiInput.setValue(null);
+            },
+
+
+
+            tokenDelete: function(oEvent){  
+                const oMultiInput = this.getView().byId("multiInputId2");
+                const items = oMultiInput.getTokens(); 
+                if(oEvent.mParameters.removedTokens[0].sId.includes("tag")){
+                    let item = {
+                        //slice everything from ID that is not the GuID
+                        sId: oEvent.mParameters.removedTokens[0].sId.slice(3,39),
+                        articleGuID: this.ArticleGuID,
+                        itemToDelete: "Tag",
+                    }
+                    //push item to itemsToDelete for later use in onSaveChanges function
+                    this.itemsToDelete.push(item);
+                } else {
+                    const oContext = oEvent.getSource().getBindingContext();
+                    oContext.delete();
+                }                      
+
+                const items2 = oMultiInput.getTokens();
+
             },
 
             onSaveChanges: function (oEvent) {
@@ -128,6 +192,7 @@ sap.ui.define([
                 let requiredInputs = this.returnIdListOfRequiredFields();
                 let passedValidation = this.validateEventFeedbackForm(requiredInputs);
                 let aContent = this.getView().byId("articleContent").getItems();
+                console.log(this.itemsToDelete);
 
                 if (passedValidation === false) {
                     //show an error message, rest of code will not execute.
@@ -139,8 +204,19 @@ sap.ui.define([
                         this.getView().getModel().remove("/ContentValue(GuID=guid'" + this.itemsToDelete[y].sId + "',ArticleGuID=guid'" + sGuID + "')");
                     } else if (this.itemsToDelete[y].itemToDelete === "Code") {
                         this.getView().getModel().remove("/CodeValue(GuID=guid'" + this.itemsToDelete[y].sId + "',ArticleGuID=guid'" + sGuID + "')");
+                    } else if (this.itemsToDelete[y].itemToDelete === "Tag"){
+                        this.getView().getModel().remove("/Tags(" + "guid'" + this.itemsToDelete[y].sId + "')");
                     }
                 }
+
+                this.getView().getModel().submitChanges({
+                    success: function (oData) {
+
+                    }.bind(this),
+                    error: function (oData) {
+                        console.log("Something went wrong.");
+                    }.bind(this)
+                });
 
                 const oContext = this.getView().getModel().update(sPath, {
                     GuID: this.getView().getBindingContext().getObject().GuID,
@@ -161,14 +237,6 @@ sap.ui.define([
                         }
                     }
                 )
-                this.getView().getModel().submitChanges({
-                    success: function (oData) {
-
-                    }.bind(this),
-                    error: function (oData) {
-                        console.log("Something went wrong.");
-                    }.bind(this)
-                });
             },
 
             returnIdListOfRequiredFields: function () {
@@ -224,6 +292,8 @@ sap.ui.define([
                 });
                 let sContentPath = "/" + sMainPath + "/to_contentValue";
                 let sCodePath = "/" + sMainPath + "/to_codeValue";
+                let oMultiInput =  this.getView().byId("multiInputId2");
+                let oTokens = oMultiInput.getTokens();
 
                 this.getView().byId("descText").setVisible(true);
                 this.getView().byId("descValue").setVisible(false);
@@ -234,7 +304,17 @@ sap.ui.define([
                 this.getView().byId("editButton").setVisible(true);
                 this.getView().byId("saveButton").setVisible(false);
                 this.getView().byId("cancelButton").setVisible(false);
+                this.getView().byId("CategoryList").setVisible(true);
+                oMultiInput.setVisible(false);
+                
                 this._isEditing = false;
+               
+                //Remove all the tokens that could be leftover after the previous editing
+                for(let x = 0; x < oTokens.length; x++){
+                    if( !oTokens[x].sId.includes('tag')){
+                        oMultiInput.removeToken(oTokens[x]);
+                    }
+                }
 
                 this.renderDisplayControls(sContentPath, sCodePath);
 
@@ -727,6 +807,7 @@ sap.ui.define([
 
                 let sCodePath = "/Articles(guid'" + this._sArticleId + "')" + "/to_codeValue"
                 let sContentPath = "/Articles(guid'" + this._sArticleId + "')" + "/to_contentValue"
+                let sTagPath = "/Articles(guid'" + this._sArticleId + "')" + "/to_tags"
 
 
                 // Create two promises for the OData calls
@@ -752,8 +833,20 @@ sap.ui.define([
                     });
                 });
 
+                let promise3 = new Promise((resolve, reject) => {
+                    this.getView().getModel().read(sTagPath, {
+                        success: function (oData) {
+                            resolve(oData.results);  // Resolve with the result of the first call
+                        },
+                        error: function (oError) {
+                            reject(oError);  // Reject if there's an error
+                        }
+                    });
+                });
+               
+
                 // Use Promise.all to wait for both promises to resolve
-                Promise.all([promise1, promise2]).then(([oCodeData, oContentData]) => {
+                Promise.all([promise1, promise2, promise3]).then(([oCodeData, oContentData, oTagData]) => {
                     // Merge the data based on OrderIndex
                     let combinedData = [...oCodeData, ...oContentData];
 
@@ -764,6 +857,8 @@ sap.ui.define([
 
                     // Sort combined data by OrderIndex
                     combinedData.sort((a, b) => a.OrderIndex - b.OrderIndex);
+
+                    
 
                     let aIndexes = [];
 
@@ -926,6 +1021,28 @@ sap.ui.define([
                             this.getView().byId("articleContent").insertItem(oContentVBox, data.OrderIndex);
                         }
                     });
+
+                    oTagData.forEach((tag)=> {
+                        // const sCodePath = this.getView().getModel().createKey("CodeValue", {
+                        //     GuID: data.GuID,
+                        //     ArticleGuID: data.ArticleGuID
+                        // });
+
+                        // oType.bindElement("/" + sCodePath);
+                        // oEditor.bindElement("/" + sCodePath);
+
+                        let oMultiInput = this.getView().byId("multiInputId2");
+                        let originalToken = new sap.m.Token({text: tag.TagName, id: "tag" + tag.GuID, key: tag.GuID });
+                        oMultiInput.addToken(originalToken);
+
+                        const sTagPath = this.getView().getModel().createKey("Tags", {
+                                GuID: tag.GuID,
+                                ArticleGuID: tag.ArticleGuID
+                            });
+                            originalToken.bindElement("/", sTagPath);  
+                       
+                    })
+
                 }).catch((error) => {
                     console.log("Error fetching data:", error);
                 });
@@ -933,198 +1050,3 @@ sap.ui.define([
         });
     });
 
-
-// aContainerVBox.forEach(function (vbox) {
-//     let oItems = vbox.getItems(); //either richtext + buttonbox or type + codeeditor + buttonbox
-//     let itemIndex = oItems[0].getBindingContext().getProperty('OrderIndex');
-//     if (OrderIndex < itemIndex) {
-//         let oDate = Date.now();
-//         itemIndex += 1;
-//Richtext
-//         let sBindingPath = oItems[0].getBindingContext().getPath();
-//         oItems[0].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', itemIndex);
-
-//         let oHBox = oItems[1];
-//         //Destroy old create button to get rid of itemIndex
-//         oHBox.getItems()[0].destroy();
-
-//         //Recreate buttons with updated itemIndex
-//         let oReplaceContentButton = new sap.m.Button({
-//             text: "Add new textbox",
-//             icon: "sap-icon://add",
-//             id: 'oldButton' + oDate
-//         });
-
-//         oHBox.insertItem(oReplaceContentButton, 0);
-//         oReplaceContentButton.attachPress(function () {
-//             this.createNewContent(itemIndex, ArticleGuID);
-//         }, this);
-//     }
-// });
-
-
-// let oRichText = new sap.ui.richtexteditor.RichTextEditor({
-//     width: "100%",
-//     height: "300px",
-//     showGroupFont: true,
-//     id: "RichtextToSend" + Date.now(),
-//     value: "{ContentValue}"
-// });
-
-// let newOrderIndex = OrderIndex + 1;
-
-// let oContentVBox = new VBox();
-// oContentVBox.addStyleClass("sapUiLargeMarginBottom");
-
-// let oModel = this.getView().getModel();
-
-// //Create entry for new content
-// let oContext = oModel.createEntry("/Articles(guid'" + ArticleGuID + "')" + "/to_contentValue", {
-//     properties: { ContentValue: "", OrderIndex: newOrderIndex, ArticleGuID: ArticleGuID }
-// });
-
-// oContentVBox.setBindingContext(oContext);
-
-// oRichText.setBindingContext(oContext);
-
-// let sNewId = oRichText.getBindingContext().getPath();
-
-
-// let oButtonHBox = new sap.m.HBox();
-
-// let oContentDelete = new sap.m.Button({
-//     text: "Delete textbox",
-//     icon: "sap-icon://delete",
-//     //Date.now is important to ensure unique ids
-//     id: "b" + Date.now() + sNewId.slice(15, 34)
-// });
-
-// let oNewContentButton = new sap.m.Button({
-//     text: "Add new textbox",
-//     icon: "sap-icon://add",
-//     id: 'newButton' + Date.now()
-// });
-
-// oNewContentButton.attachPress(function () {
-//     this.createNewContent(newOrderIndex, ArticleGuID);
-// }, this);
-
-// oContentDelete.attachPress(function (oEvent) {
-//     this.deleteNewContent(oEvent, oContext);
-// }, this);
-
-// oButtonHBox.insertItem(oContentDelete);
-// oButtonHBox.insertItem(oNewContentButton);
-// oContentVBox.insertItem(oButtonHBox);
-// oContentVBox.insertItem(oRichText);
-
-// articleContent.insertItem(oContentVBox, newOrderIndex);
-
-// //Get all outer VBox items
-// let newVBox = articleContent.getItems();
-
-// //Sort in ascending order
-// newVBox.sort(function (vbox1, vbox2) {
-//     let oItem1 = vbox1.getItems()[0];
-//     let oItem2 = vbox2.getItems()[0];
-
-//     let itemOrderIndex1 = oItem1.getBindingContext().getProperty('OrderIndex');
-//     let itemOrderIndex2 = oItem2.getBindingContext().getProperty('OrderIndex');
-
-//     return itemOrderIndex1 - itemOrderIndex2;
-// });
-// articleContent.removeAllItems();  // Clear all items first
-// newVBox.forEach(function (vbox) {
-//     articleContent.addItem(vbox);  // Add items back in sorted order
-// });
-
-
-// ------------ old way to update buttons
-
-
-// for (let x = 0; x < aContainerItems.length; x++) {
-//     //Separate codeeditor
-//     if (aContainerItems[x].sId.includes("CodeEditor")) {
-//         let aCodeItems = aContainerItems[x].getItems();
-//         //Get index of codeeditor
-//         let iItemIndex = aCodeItems[1].getBindingContext().getProperty('OrderIndex');
-
-//         if (OrderIndex < iItemIndex) {
-//             iItemIndex += 1;
-//             //Get path for codeeditor
-//             let sBindingPath = aCodeItems[1].getBindingContext().getPath();
-//             //Set new index for codeeditor
-//             aCodeItems[1].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', iItemIndex)
-
-//             //get hold of ButtonBox
-//             let aHBox = aCodeItems[2];
-//             //delete old create button
-//             aHBox.getItems()[1].destroy();
-//             aHBox.getItems()[0].destroy();
-
-//             //Recreate create buttons that stores the new itemindex
-//             let oNewCodeButton = new sap.m.Button({
-//                 text: "Add new codeeditor",
-//                 icon: "sap-icon://source-code",
-//                 id: "CodeEditor" + Date.now() + iItemIndex
-//             });
-
-//             let oNewRichTextButton = new sap.m.Button({
-//                 text: "Add new textbox",
-//                 icon: "sap-icon://text",
-//                 id: "RichText" + Date.now() + iItemIndex
-//             });
-
-//             aHBox.insertItem(oNewCodeButton, 0);
-//             aHBox.insertItem(oNewRichTextButton, 1);
-//             oNewCodeButton.attachPress(function (oEvent) {
-//                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
-//             }, this);
-//             oNewRichTextButton.attachPress(function (oEvent) {
-//                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
-//             }, this);
-//         }
-//     }
-//     //Separate richtext
-//     else {
-//         let aContentItems = aContainerItems[x].getItems();
-//         //Get index of richtext
-//         let iItemIndex = aContentItems[0].getBindingContext().getProperty('OrderIndex');
-
-//         if (OrderIndex < iItemIndex) {
-//             iItemIndex += 1;
-//             //Get path for richtext
-//             let sBindingPath = aContentItems[0].getBindingContext().getPath();
-//             //Set new index for richtext
-//             aContentItems[0].getBindingContext().getModel().setProperty(sBindingPath + '/OrderIndex', iItemIndex)
-
-//             //get hold of ButtonBox
-//             let aHBox = aContentItems[1];
-//             //delete old create button
-//             aHBox.getItems()[1].destroy();
-//             aHBox.getItems()[0].destroy();
-
-//             //Recreate create button that stores the new itemindex
-//             let oNewCodeButton = new sap.m.Button({
-//                 text: "Add new codeeditor",
-//                 icon: "sap-icon://source-code",
-//                 id: "CodeEditor" + Date.now() + iItemIndex
-//             });
-
-//             let oNewRichTextButton = new sap.m.Button({
-//                 text: "Add new textbox",
-//                 icon: "sap-icon://text",
-//                 id:  "RichText" + Date.now() + iItemIndex
-//             });
-
-//             aHBox.insertItem(oNewCodeButton, 0);
-//             aHBox.insertItem(oNewRichTextButton, 1);
-//             oNewCodeButton.attachPress(function (oEvent) {
-//                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
-//             }, this);
-//             oNewRichTextButton.attachPress(function (oEvent) {
-//                 this.createNewContent(oEvent, iItemIndex, ArticleGuID);
-//             }, this);
-//         }
-//     }
-// }

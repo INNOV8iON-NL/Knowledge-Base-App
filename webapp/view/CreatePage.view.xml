@@ -40,7 +40,6 @@
                                     />
                                     <Input
                                         placeholder="Write the title of the article here"
-                                        valueState="Error"
                                         value="{Title}"
                                         editable="true"
                                         id="articleTitleId"
@@ -57,7 +56,6 @@
                                     <TextArea
                                         required="true"
                                         value="{Description}"
-                                        valueState="Error"
                                         rows="10"
                                         visible="true"
                                         editable="true"
@@ -77,8 +75,6 @@
                                         suggestionItemSelected=".validateArticleWizard"
                                         change=".tokenChange"
                                         tokenUpdate=".validateArticleWizard"
-                                        required="true"
-                                        valueState="Error"
                                         id="multiInputId"
                                         width="500px"
                                         showValueHelp="false"

@@ -84,18 +84,6 @@
                     selectionChange=".onSelectionChange"
                 >
                     <columns>
-                    <!-- <Column
-                            id="Description"
-                            hAlign="Begin"
-                        >
-                            <customData>
-                                <core:CustomData
-                                    key="p13nData"
-                                    value='\{"columnKey": "Description", "columnIndex": "70"}'
-                                />
-                            </customData>
-                            <Text text="Description" />
-                        </Column> -->
                         <Column
                             id="Category"
                             hAlign="Begin"
@@ -114,9 +102,6 @@
                             type="Navigation"
                             press=".onDetailPress"
                         >
-                        <!-- <cells>
-                           <Text text="{Description}" class="sapUiTinyMargin"></Text>
-                        </cells> -->
                             <cells>                            
                                 <List
                                     id="tagListId"

@@ -32,6 +32,10 @@ sap.ui.define([
                 const oFinishButton = oView.byId("newArticleWizard");
                 const oMultiInput = oView.byId("multiInputId");
                 const oRichText = oView.byId("richtextEditorId");
+                oMultiInput.setValueState("None");
+                this.getView().byId("articleTitleId").setValueState("None");
+                this.getView().byId("descriptionId").setValueState("None");
+
                 // const mainButton = sap.ui.getCore().byId('backBtn');
 
                 oView.bindElement({
@@ -50,7 +54,7 @@ sap.ui.define([
                 oFinishButton.setFinishButtonText("Submit");
                 oMultiInput.attachBrowserEvent('mouseout', (oEvent) => {
                     if (oMultiInput.getTokens().length < 1) {
-                        oMultiInput.setValueState("Error");
+                       // oMultiInput.setValueState("Error");
                         this.getView().byId("newArticleWizard").invalidateStep(this.getView().byId("TitleStep"));
                     }
                 })
@@ -73,7 +77,7 @@ sap.ui.define([
 
                 //set inputvalue to 0 so text value dissappears
                 oMultiInput.setValue(null);
-
+                
                 this.validateArticleWizard();
             },
 
@@ -205,13 +209,13 @@ sap.ui.define([
                 oWizard.goToStep(oFirstStep);
 
                 this.getView().byId("multiInputId").removeAllTokens();
-                this.getView().byId("multiInputId").setValueState("Error");
+                //this.getView().byId("multiInputId").setValueState("Error");
                 // this.getView().byId("comboBoxId").setSelectedKey("");
                 this.getView().byId("newArticleWizard").invalidateStep(this.getView().byId("TitleStep"));
                 this.getView().byId("newArticleWizard").invalidateStep(this.getView().byId("ContentStep"));
-                this.getView().byId("descriptionId").setValueState("Error");
+                //this.getView().byId("descriptionId").setValueState("Error");
                 this.getView().byId("descriptionId").setValue("");
-                this.getView().byId("articleTitleId").setValueState("Error");
+                //this.getView().byId("articleTitleId").setValueState("Error");
                 this.getView().byId("articleTitleId").setValue("");
                 this.createInitialButtons();
                 this._iOrderIndex = 0;
