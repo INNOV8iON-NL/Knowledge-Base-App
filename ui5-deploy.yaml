@@ -16,9 +16,11 @@ builder:
         target:
           destination: ECD
           url: http://iqibt-public.sabaas.nl:8001
+          client: '100'
         app:
-          name: Z_ARTICLES_F
-          package: Z001
+          name: ZKNOWLEDGE_BASE
+          description: Knowledge base app
+          package: ZKNOWLEDGE_BASE
           transport: S4PK900929
         exclude:
           - /test/

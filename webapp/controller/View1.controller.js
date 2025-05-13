@@ -12,10 +12,10 @@ sap.ui.define([
 
         return Controller.extend("articlesfreestyle.controller.View1", {
 
-            onInit: function(){
-                let oSmartTable = this.getView().byId("smartTableId");
-                oSmartTable.setEnableCopy(false);
-            },
+            // onInit: function(){
+            //     let oSmartTable = this.getView().byId("smartTableId");
+            //     oSmartTable.setEnableCopy(false);
+            // },
 
             //----------------- Go to details ------------------------- 
 

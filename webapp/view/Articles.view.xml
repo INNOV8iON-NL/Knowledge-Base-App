@@ -145,9 +145,8 @@
 
                      <MultiInput
                                         suggestionItemSelected=".validateArticleWizard"
-                                        change=".tokenChange"
-                                        tokenUpdate=".tokenDelete"
                                         id="multiInputId2"
+                                        tokenUpdate="_onTokenUpdate"
                                         width="350px"
                                         visible="false"
                                         showValueHelp="false"

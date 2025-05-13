@@ -335,8 +335,7 @@ sap.ui.define([
                     });
 
                     //Set value help with code options
-                    let oJsonModel = new sap.ui.model.json.JSONModel();
-                    oJsonModel.loadData("/model/codecollection.json");
+                    let oJsonModel = new sap.ui.model.json.JSONModel(sap.ui.require.toUrl("articlesfreestyle/model/codecollection.json"));
                     oJsonModel.setSizeLimit(160);
                     oCode.setModel(oJsonModel);
 

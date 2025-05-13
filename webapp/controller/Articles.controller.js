@@ -6,8 +6,9 @@ sap.ui.define([
     "sap/ui/codeeditor/CodeEditor",
     "sap/m/VBox",
     "sap/m/Tokenizer"
+
 ],
-    function (Controller, FormattedText, MessageBox, RichTextEditor, CodeEditor, VBox, Tokenizer) {
+    function (Controller, FormattedText, MessageToast, RichTextEditor, CodeEditor, VBox, Tokenizer) {
         "use strict";
 
         return Controller.extend("articlesfreestyle.controller.Articles", {
@@ -22,11 +23,15 @@ sap.ui.define([
 
                 //Array to collect items to be deleted
                 this.itemsToDelete = [];
+                this._oMultiInput =  this.getView().byId("multiInputId2");
+                this._oMultiInput.addValidator(this._multiInputValidator.bind(this._oMultiInput))
             },
 
             getRouter: function () {
                 return sap.ui.core.UIComponent.getRouterFor(this);
             },
+
+
             _onObjectMatched: function (oEvent) {
                 var oArgs = oEvent.getParameter("arguments");
                 let oView = this.getView();
@@ -113,8 +118,8 @@ sap.ui.define([
                 this._isEditing = true;
 
                 //Remove all the tokens that could be leftover after the previous editing
-                for(let x = 0; x < oTokens.length; x++){
-                    if( !oTokens[x].sId.includes('tag')){
+                for (let x = 0; x < oTokens.length; x++) {
+                    if (!oTokens[x].sId.includes('tag')) {
                         oMultiInput.removeToken(oTokens[x]);
                     }
                 }
@@ -134,9 +139,14 @@ sap.ui.define([
                     let newToken = new sap.m.Token({
                         text: tokens[i]
                     });
+                    newToken.attachDelete(function () {
+                        console.log('Newly created token is deleted');
+                        const oContext = oEvent.getSource().getBindingContext();
+                        oContext.delete();
+                    })
                     oMultiInput.addToken(newToken);
                     let oContext = oModel.createEntry("/Tags", {
-                        properties: { TagName: tokens[i], ArticleguID: this._sArticleId  }
+                        properties: { TagName: tokens[i], ArticleguID: this._sArticleId }
                     });
 
                     oMultiInput.setBindingContext(oContext);
@@ -147,52 +157,60 @@ sap.ui.define([
                 oMultiInput.setValue(null);
             },
 
+            _multiInputValidator: function(args) {
+                let oText = args.text.toUpperCase();
+                let oNewToken = new sap.m.Token({
+                    key : args.text,
+                    text: oText
+                });
+                
+                return oNewToken;
+            },
 
 
-            tokenDelete: function(oEvent){  
-                const oMultiInput = this.getView().byId("multiInputId2");
-                const items = oMultiInput.getTokens(); 
-                if(oEvent.mParameters.removedTokens[0].sId.includes("tag")){
-                    let item = {
-                        //slice everything from ID that is not the GuID
-                        sId: oEvent.mParameters.removedTokens[0].sId.slice(3,39),
-                        articleGuID: this.ArticleGuID,
-                        itemToDelete: "Tag",
+            _onTokenUpdate: function(oEvent) {
+                var aTokens,
+                    sTokensText = "",
+                    i;
+    
+                if (oEvent.getParameter('type') === Tokenizer.TokenUpdateType.Added) {
+                    aTokens = oEvent.getParameter('addedTokens');
+
+                    for (i = 0; i < aTokens.length; i++) {
+                        sTokensText =  aTokens[i].getText();
+                        let oContext = this.getView().getModel().createEntry("/Tags", {
+                            properties: { TagName: sTokensText, ArticleguID: this._sArticleId }
+                        });        
+                        this._oMultiInput.setBindingContext(oContext);
                     }
-                    //push item to itemsToDelete for later use in onSaveChanges function
-                    this.itemsToDelete.push(item);
-                } else {
-                    const oContext = oEvent.getSource().getBindingContext();
-                    oContext.delete();
-                }                      
-
-                const items2 = oMultiInput.getTokens();
-
+                    
+                } else if (oEvent.getParameter('type') === Tokenizer.TokenUpdateType.Removed) {
+                    aTokens = oEvent.getParameter('removedTokens');
+                    for (i = 0; i < aTokens.length; i++) {
+                        if(aTokens[i].sId.includes("tag")){
+                            console.log(aTokens[i].sId.slice(3, 39));
+                            this.getView().getModel().remove(`/Tags(guid'${aTokens[i].sId.slice(3, 39)}')`);
+                        } else {
+                                const oContext = oEvent.getSource().getBindingContext();
+                                oContext.delete();
+                            }
+                        }
+                }   
             },
 
             onSaveChanges: function (oEvent) {
                 const sGuID = this.getView().getBindingContext().getObject().GuID;
                 const sPath = `/Articles(guid'${sGuID}')`;
+                let sTitleValue = this.getView().byId("titleValue").getValue();
+                let sDescValue = this.getView().byId("descValue").getValue();
                 let requiredInputs = this.returnIdListOfRequiredFields();
                 let passedValidation = this.validateEventFeedbackForm(requiredInputs);
                 let aContent = this.getView().byId("articleContent").getItems();
-                console.log(this.itemsToDelete);
 
-                if (passedValidation === false) {
-                    //show an error message, rest of code will not execute.
+                if (!passedValidation) {
+                    // Show an error message, rest of code will not execute.
                     return false;
                 }
-
-                for (let y = 0; y < this.itemsToDelete.length; y++) {
-                    if (this.itemsToDelete[y].itemToDelete === "Richtext") {
-                        this.getView().getModel().remove("/ContentValue(GuID=guid'" + this.itemsToDelete[y].sId + "',ArticleGuID=guid'" + sGuID + "')");
-                    } else if (this.itemsToDelete[y].itemToDelete === "Code") {
-                        this.getView().getModel().remove("/CodeValue(GuID=guid'" + this.itemsToDelete[y].sId + "',ArticleGuID=guid'" + sGuID + "')");
-                    } else if (this.itemsToDelete[y].itemToDelete === "Tag"){
-                        this.getView().getModel().remove("/Tags(" + "guid'" + this.itemsToDelete[y].sId + "')");
-                    }
-                }
-
                 this.getView().getModel().submitChanges({
                     success: function (oData) {
 
@@ -204,8 +222,8 @@ sap.ui.define([
 
                 const oContext = this.getView().getModel().update(sPath, {
                     GuID: this.getView().getBindingContext().getObject().GuID,
-                    Title: this.getView().byId("titleText").getValue,
-                    Description: this.getView().byId("descText").getValue,
+                    Title: sTitleValue,
+                    Description: sDescValue
                 },
                     {
                         success: function (oData) {
@@ -267,7 +285,7 @@ sap.ui.define([
                 });
                 let sContentPath = "/" + sMainPath + "/to_contentValue";
                 let sCodePath = "/" + sMainPath + "/to_codeValue";
-                let oMultiInput =  this.getView().byId("multiInputId2");
+                let oMultiInput = this.getView().byId("multiInputId2");
                 let oTokens = oMultiInput.getTokens();
 
                 this.getView().byId("descText").setVisible(true);
@@ -280,12 +298,12 @@ sap.ui.define([
                 this.getView().byId("cancelButton").setVisible(false);
                 this.getView().byId("CategoryList").setVisible(true);
                 oMultiInput.setVisible(false);
-                
+
                 this._isEditing = false;
-               
+
                 //Remove all the tokens that could be leftover after the previous editing
-                for(let x = 0; x < oTokens.length; x++){
-                    if( !oTokens[x].sId.includes('tag')){
+                for (let x = 0; x < oTokens.length; x++) {
+                    if (!oTokens[x].sId.includes('tag')) {
                         oMultiInput.removeToken(oTokens[x]);
                     }
                 }
@@ -299,7 +317,6 @@ sap.ui.define([
 
             selectChange: function () {
                 const language = this.getView().byId("articleCombobox").getSelectedItem().getText();
-                console.log(language);
                 const editor = this.getView().byId("articleEditorId");
                 editor.setType(language);
             },
@@ -425,35 +442,44 @@ sap.ui.define([
             },
 
             deleteFromButton: function (oEvent, articleGuID, itemToDelete) {
-                let item = {
-                    //slice everything from ID that is not the GuID
-                    sId: oEvent.getSource().getId().slice(14),
-                    articleGuID: articleGuID,
-                    itemToDelete: itemToDelete
-                }
-                //push item to itemsToDelete for later use in onSaveChanges function
-                this.itemsToDelete.push(item);
-
-                //Slice everything from the ID that is not GuID
-                let sContentId = oEvent.getSource().getId().slice(14);
-
                 let oVBoxContainer = this.getView().byId("articleContent");
-                let oVBoxes = oVBoxContainer.getItems();
+                let that = this;
+                let sId = oEvent.getSource().getId().slice(14);
 
-                //only remove items from frontend view 
-                for (let x = 0; x < oVBoxes.length; x++) {
-                    let oInnerVBox = oVBoxes[x].getItems();
-                    for (let y = 0; y < oInnerVBox.length; y++) {
-                        if (oInnerVBox[y].sId.includes(sContentId)) {
-                            oVBoxContainer.removeItem(oVBoxes[x]);
+                sap.m.MessageBox.warning("This action can`t be reversed. Continue?", {
+                    actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
+                    emphasizedAction: sap.m.MessageBox.Action.OK,
+                    onClose: function (sAction) {
+                        if (sAction == "OK") {
+                            let deletePath;
+                            if (itemToDelete === "Richtext") {
+                                deletePath = `/ContentValue(GuID=guid'${sId}',ArticleGuID=guid'${articleGuID}')`;
+                            } else if (itemToDelete === "Code") {
+                                deletePath = `/CodeValue(GuID=guid'${sId}',ArticleGuID=guid'${articleGuID}')`;
+                            }
+                            that.getView().getModel().remove(deletePath);
+
+                            //remove items from frontend view as well 
+                            let oVBoxes = oVBoxContainer.getItems();
+                            for (let x = 0; x < oVBoxes.length; x++) {
+                                let oInnerVBox = oVBoxes[x].getItems();
+
+                                for (let y = 0; y < oInnerVBox.length; y++) {
+                                    if (oInnerVBox[y].sId.includes(sId)) {
+                                        oVBoxContainer.removeItem(oVBoxes[x]);
+                                    }
+                                }
+                            }
+
+                            //Get new length of oElementsArr
+                            let newElementsArr = oVBoxContainer.getItems();
+                            //Check if there are any elements left
+                            newElementsArr.length === 0 ? this.createInitialButtons() : ""
+                        } else {
+                            return;
                         }
                     }
-                }
-
-                //Get new length of oElementsArr
-                let newElementsArr = oVBoxContainer.getItems();
-                //Check if there are any elements left
-                newElementsArr.length === 0 ? this.createInitialButtons() : ""
+                });
             },
 
             deleteNewContent: function (oContext, sVBoxId) {
@@ -520,20 +546,19 @@ sap.ui.define([
 
                 //Delete empty page create buttons if they are active
                 aContainerItems.forEach((vbox) => {
-                    if(vbox.sId.includes("oButtonBox")){
+                    if (vbox.sId.includes("oButtonBox")) {
                         vbox.destroyItems();
                     }
                 });
-                
+
                 // Loop over container items and update the create buttons
                 for (let x = 0; x < aContainerItems.length; x++) {
                     //Get items for either richtext or codeeditor
                     let aItems = aContainerItems[x].getItems();
-                    console.log(aItems);
                     if (aContainerItems[x].sId.includes("CodeEditor")) {
                         //In case of updating codeeditor buttons
                         this.handleContentCreation(aItems, OrderIndex, true, ArticleGuID); // Pass `true` for CodeEditor
-                    } else if (aContainerItems[x].sId.includes("RichText")){
+                    } else if (aContainerItems[x].sId.includes("RichText")) {
                         //In case of updating richtext buttons
                         this.handleContentCreation(aItems, OrderIndex, false, ArticleGuID); // Pass `false` for RichText
                     }
@@ -715,14 +740,14 @@ sap.ui.define([
                     // Check if vbox1 and vbox2 have items, then if it`s a richtext vbox, look for first item, if codeeditor vbox look for second
                     let oItem1 = (vbox1.getItems().length > 0) ? (vbox1.sId.includes("RichText") ? vbox1.getItems()[0] : vbox1.getItems()[1]) : null;
                     let oItem2 = (vbox2.getItems().length > 0) ? (vbox2.sId.includes("RichText") ? vbox2.getItems()[0] : vbox2.getItems()[1]) : null;
-                
+
                     // Ensure both items exist and have a binding context
                     if (oItem1 && oItem2 && oItem1.getBindingContext() && oItem2.getBindingContext()) {
                         let itemOrderIndex1 = oItem1.getBindingContext().getProperty('OrderIndex');
                         let itemOrderIndex2 = oItem2.getBindingContext().getProperty('OrderIndex');
                         return itemOrderIndex1 - itemOrderIndex2;
                     } else {
-                        return 0; 
+                        return 0;
                     }
                 })
 
@@ -816,7 +841,7 @@ sap.ui.define([
                         }
                     });
                 });
-               
+
 
                 // Use Promise.all to wait for both promises to resolve
                 Promise.all([promise1, promise2, promise3]).then(([oCodeData, oContentData, oTagData]) => {
@@ -824,7 +849,7 @@ sap.ui.define([
                     let combinedData = [...oCodeData, ...oContentData];
 
                     //If there`s no content to be displayed, show two buttons that enable content creation
-                    if (combinedData.length === 0){
+                    if (combinedData.length === 0) {
                         this.createInitialButtons();
                     }
 
@@ -850,10 +875,9 @@ sap.ui.define([
                                 }
                             });
 
-                            let oModel = new sap.ui.model.json.JSONModel();
-                            oModel.loadData("/model/codecollection.json");
-                            oModel.setSizeLimit(160);
-                            oType.setModel(oModel);
+                            let oJsonModel = new sap.ui.model.json.JSONModel(sap.ui.require.toUrl("articlesfreestyle/model/codecollection.json"));
+                            oJsonModel.setSizeLimit(160);
+                            oType.setModel(oJsonModel);
 
                             let oEditor = new sap.ui.codeeditor.CodeEditor({
                                 value: "{CodeValue}",
@@ -993,17 +1017,16 @@ sap.ui.define([
                         }
                     });
 
-                    oTagData.forEach((tag)=> {
+                    oTagData.forEach((tag) => {
                         let oMultiInput = this.getView().byId("multiInputId2");
-                        let originalToken = new sap.m.Token({text: tag.TagName, id: "tag" + tag.GuID, key: tag.GuID });
+                        let originalToken = new sap.m.Token({ text: tag.TagName, id: "tag" + tag.GuID, key: tag.GuID });
                         oMultiInput.addToken(originalToken);
 
                         const sTagPath = this.getView().getModel().createKey("Tags", {
-                                GuID: tag.GuID,
-                                ArticleGuID: tag.ArticleGuID
-                            });
-                            originalToken.bindElement("/", sTagPath);  
-                       
+                            GuID: tag.GuID,
+                            ArticleGuID: tag.ArticleGuID
+                        });
+                        originalToken.bindElement("/", sTagPath);
                     })
 
                 }).catch((error) => {
