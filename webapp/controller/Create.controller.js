@@ -3,10 +3,10 @@ sap.ui.define([
     "sap/m/MessageBox",
     "sap/ui/richtexteditor/RichTextEditor",
     "sap/ui/model/type/DateTime",
-    "sap/ui/codeeditor/CodeEditor"
-
+    "sap/ui/codeeditor/CodeEditor",
+    "sap/m/Tokenizer"
 ],
-    function (Controller, MessageBox, RichTextEditor, DateTime, CodeEditor) {
+    function (Controller, MessageBox, RichTextEditor, DateTime, CodeEditor, Tokenizer) {
         "use strict";
 
         return Controller.extend("articlesfreestyle.controller.Create", {
@@ -16,6 +16,8 @@ sap.ui.define([
             onInit: function () {
                 var oRouter = this.getRouter();
                 oRouter.getRoute("create").attachMatched(this._onObjectMatched, this);
+                this._oCreateMultiInput = this.getView().byId("multiInputId");
+                this._oCreateMultiInput.addValidator(this.createMultiInputValidator.bind(this._oCreateMultiInput))
             },
 
             getRouter: function () {
@@ -50,24 +52,18 @@ sap.ui.define([
             },
 
             //----------------- Function for creating tokens for input  -------------------------
+
+            createMultiInputValidator: function (args) {
+                let oText = args.text.toUpperCase();
+                let oNewToken = new sap.m.Token({
+                    key: args.text,
+                    text: oText
+                });
+                return oNewToken;
+            },
+            
             tokenChange: function (oEvent) {
-                const sValue = oEvent.getParameter("value").trim().toUpperCase();
-                const tokens = [];
-                tokens.push(sValue);
-                const oMultiInput = this.getView().byId("multiInputId");
-
-                //create tokens for the input
-                for (let i = 0; i < tokens.length; i++) {
-                    let newToken = new sap.m.Token({
-                        text: tokens[i]
-                    });
-                    oMultiInput.addToken(newToken);
-                };
-
-                //set inputvalue to 0 so text value dissappears
-                oMultiInput.setValue(null);
-                
-                this.validateArticleWizard();
+              this.validateArticleWizard();
             },
 
             validateArticleWizard: function () {

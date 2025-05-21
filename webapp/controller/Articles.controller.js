@@ -6,7 +6,6 @@ sap.ui.define([
     "sap/ui/codeeditor/CodeEditor",
     "sap/m/VBox",
     "sap/m/Tokenizer"
-
 ],
     function (Controller, FormattedText, MessageToast, RichTextEditor, CodeEditor, VBox, Tokenizer) {
         "use strict";
@@ -23,7 +22,7 @@ sap.ui.define([
 
                 //Array to collect items to be deleted
                 this.itemsToDelete = [];
-                this._oMultiInput =  this.getView().byId("multiInputId2");
+                this._oMultiInput = this.getView().byId("multiInputId2");
                 this._oMultiInput.addValidator(this._multiInputValidator.bind(this._oMultiInput))
             },
 
@@ -116,129 +115,76 @@ sap.ui.define([
                 let oTokens = oMultiInput.getTokens();
                 this.renderEditControls();
                 this._isEditing = true;
-
-                //Remove all the tokens that could be leftover after the previous editing
-                for (let x = 0; x < oTokens.length; x++) {
-                    if (!oTokens[x].sId.includes('tag')) {
-                        oMultiInput.removeToken(oTokens[x]);
-                    }
-                }
             },
 
-            tokenChange: function (oEvent) {
-                const sValue = oEvent.getParameter("value").trim().toUpperCase();
-                const tokens = [];
-                tokens.push(sValue);
-                const oMultiInput = this.getView().byId("multiInputId2");
-                const oBinding = oMultiInput.getBindingContext().getObject();
-                let oModel = this.getView().getModel();
-                const allitems = oMultiInput.getTokens();
-
-                //create tokens for the input
-                for (let i = 0; i < tokens.length; i++) {
-                    let newToken = new sap.m.Token({
-                        text: tokens[i]
-                    });
-                    newToken.attachDelete(function () {
-                        console.log('Newly created token is deleted');
-                        const oContext = oEvent.getSource().getBindingContext();
-                        oContext.delete();
-                    })
-                    oMultiInput.addToken(newToken);
-                    let oContext = oModel.createEntry("/Tags", {
-                        properties: { TagName: tokens[i], ArticleguID: this._sArticleId }
-                    });
-
-                    oMultiInput.setBindingContext(oContext);
-
-                };
-                const allitems2 = oMultiInput.getTokens();
-                //set inputvalue to 0 so text value dissappears
-                oMultiInput.setValue(null);
-            },
-
-            _multiInputValidator: function(args) {
+            _multiInputValidator: function (args) {
                 let oText = args.text.toUpperCase();
                 let oNewToken = new sap.m.Token({
-                    key : args.text,
+                    key: args.text,
                     text: oText
                 });
-                
+
                 return oNewToken;
             },
 
 
-            _onTokenUpdate: function(oEvent) {
+            _onTokenUpdate: function (oEvent) {
                 var aTokens,
                     sTokensText = "",
                     i;
-    
+
                 if (oEvent.getParameter('type') === Tokenizer.TokenUpdateType.Added) {
                     aTokens = oEvent.getParameter('addedTokens');
 
                     for (i = 0; i < aTokens.length; i++) {
-                        sTokensText =  aTokens[i].getText();
+                        sTokensText = aTokens[i].getText();
                         let oContext = this.getView().getModel().createEntry("/Tags", {
                             properties: { TagName: sTokensText, ArticleguID: this._sArticleId }
-                        });        
+                        });
                         this._oMultiInput.setBindingContext(oContext);
                     }
-                    
+
                 } else if (oEvent.getParameter('type') === Tokenizer.TokenUpdateType.Removed) {
                     aTokens = oEvent.getParameter('removedTokens');
                     for (i = 0; i < aTokens.length; i++) {
-                        if(aTokens[i].sId.includes("tag")){
+                        if (aTokens[i].sId.includes("tag")) {
                             console.log(aTokens[i].sId.slice(3, 39));
                             this.getView().getModel().remove(`/Tags(guid'${aTokens[i].sId.slice(3, 39)}')`);
                         } else {
-                                const oContext = oEvent.getSource().getBindingContext();
-                                oContext.delete();
-                            }
+                            const oContext = oEvent.getSource().getBindingContext();
+                            oContext.delete();
                         }
-                }   
+                    }
+                }
             },
 
             onSaveChanges: function (oEvent) {
-                const sGuID = this.getView().getBindingContext().getObject().GuID;
-                const sPath = `/Articles(guid'${sGuID}')`;
-                let sTitleValue = this.getView().byId("titleValue").getValue();
-                let sDescValue = this.getView().byId("descValue").getValue();
+                // const sGuID = this.getView().getBindingContext().getObject().GuID;
+                // const sPath = `/Articles(guid'${sGuID}')`;
+                // let sTitleValue = this.getView().byId("titleValue").getValue();
+                // let sDescValue = this.getView().byId("descValue").getValue();
                 let requiredInputs = this.returnIdListOfRequiredFields();
                 let passedValidation = this.validateEventFeedbackForm(requiredInputs);
-                let aContent = this.getView().byId("articleContent").getItems();
+                // let aContent = this.getView().byId("articleContent").getItems();
 
                 if (!passedValidation) {
                     // Show an error message, rest of code will not execute.
                     return false;
                 }
+
                 this.getView().getModel().submitChanges({
                     success: function (oData) {
-
+                        sap.m.MessageBox.success("Article was updated.", {
+                            onClose: function () {
+                                //Refresh window so modifications appear
+                                window.location.reload();
+                            }
+                        });
                     }.bind(this),
                     error: function (oData) {
                         console.log("Something went wrong.");
                     }.bind(this)
                 });
-
-                const oContext = this.getView().getModel().update(sPath, {
-                    GuID: this.getView().getBindingContext().getObject().GuID,
-                    Title: sTitleValue,
-                    Description: sDescValue
-                },
-                    {
-                        success: function (oData) {
-                            sap.m.MessageBox.success("Article was updated.", {
-                                onClose: function () {
-                                    //Refresh window so modifications appear
-                                    window.location.reload();
-                                }
-                            });
-                        }.bind(this),
-                        error: function (oData) {
-                            sap.m.MessageBox.error("Article could not be updated.");
-                        }
-                    }
-                )
             },
 
             returnIdListOfRequiredFields: function () {

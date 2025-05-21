@@ -73,8 +73,8 @@
                                     />
                                     <MultiInput
                                         suggestionItemSelected=".validateArticleWizard"
-                                        change=".tokenChange"
-                                        tokenUpdate=".validateArticleWizard"
+                                        tokenUpdate=".tokenChange"
+                                        required="true"
                                         id="multiInputId"
                                         width="500px"
                                         showValueHelp="false"
