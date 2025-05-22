@@ -524,8 +524,12 @@ sap.ui.define([
                         }
                     });
 
-                    let oJsonModel = new sap.ui.model.json.JSONModel();
-                    oJsonModel.loadData("/model/codecollection.json");
+                    // let oJsonModel = new sap.ui.model.json.JSONModel();
+                    // oJsonModel.loadData("/model/codecollection.json");
+                    // oJsonModel.setSizeLimit(160);
+                    // oType.setModel(oJsonModel);
+
+                    let oJsonModel = new sap.ui.model.json.JSONModel(sap.ui.require.toUrl("articlesfreestyle/model/codecollection.json"));
                     oJsonModel.setSizeLimit(160);
                     oType.setModel(oJsonModel);
 
