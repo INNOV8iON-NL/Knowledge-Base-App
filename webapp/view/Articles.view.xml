@@ -144,27 +144,27 @@
                     </List>
 
                      <MultiInput
-                                        suggestionItemSelected=".validateArticleWizard"
-                                        id="multiInputId2"
-                                        tokenUpdate="_onTokenUpdate"
-                                        width="350px"
-                                        visible="false"
-                                        showValueHelp="false"
-                                        placeholder="You can choose multiple categories. Enter values like Frontend, ABAP, etc.."
-                                        suggestionItems="{
-				                            path: '/UniqueTags',
-				                            sorter: { path: 'TagName' }
-			                                            }"
-                                        suggestionRows="{/TagName}"
+                        suggestionItemSelected=".validateArticleWizard"
+                        id="multiInputId2"
+                        tokenUpdate="_onTokenUpdate"
+                        width="350px"
+                        visible="false"
+                        showValueHelp="false"
+                        placeholder="You can choose multiple categories. Enter values like Frontend, ABAP, etc.."
+                        suggestionItems="{
+				            path: '/UniqueTags',
+				            sorter: { path: 'TagName' }
+			                        }"
+                        suggestionRows="{/TagName}"
                                     >
-                                        <suggestionColumns>
-                                            <Column
-                                                hAlign="Begin"
-                                                popinDisplay="Inline"
-                                                demandPopin="true"
-                                            >
-                                                <Label text="Name" />
-                                            </Column>
+                                <suggestionColumns>
+                                    <Column
+                                        hAlign="Begin"
+                                        popinDisplay="Inline"
+                                        demandPopin="true"
+                                    >
+                                    <Label text="Name" />
+                                    </Column>
                                         </suggestionColumns>
                                         <suggestionRows>
                                             <ColumnListItem>

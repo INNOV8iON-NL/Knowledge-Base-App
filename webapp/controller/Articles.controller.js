@@ -79,27 +79,6 @@ sap.ui.define([
                 }
             },
 
-            //----------------- Function for main navbutton press  -------------------------
-
-            mainNavPress: function () {
-                let oRouter = this.getRouter();
-                oRouter.stop();
-
-                MessageBox.warning("Are you sure you want to go back? Unsent information will be lost.", {
-                    actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
-                    emphasizedAction: MessageBox.Action.CANCEL,
-                    onClose: function (sAction) {
-                        if (sAction == "OK") {
-                            oRouter.initialize();
-                            oRouter.navTo("RouteView1", false);
-                        } else {
-                            return;
-                        }
-                    }
-                })
-            },
-
-
             //----------------- Edit functions ------------------------- 
 
             onEdit: function () {
@@ -159,13 +138,8 @@ sap.ui.define([
             },
 
             onSaveChanges: function (oEvent) {
-                // const sGuID = this.getView().getBindingContext().getObject().GuID;
-                // const sPath = `/Articles(guid'${sGuID}')`;
-                // let sTitleValue = this.getView().byId("titleValue").getValue();
-                // let sDescValue = this.getView().byId("descValue").getValue();
                 let requiredInputs = this.returnIdListOfRequiredFields();
                 let passedValidation = this.validateEventFeedbackForm(requiredInputs);
-                // let aContent = this.getView().byId("articleContent").getItems();
 
                 if (!passedValidation) {
                     // Show an error message, rest of code will not execute.
@@ -325,7 +299,7 @@ sap.ui.define([
                     // Sort combined data by OrderIndex
                     combinedData.sort((a, b) => a.OrderIndex - b.OrderIndex);
 
-                    // Now, loop through the sorted combined data and insert items
+                    //Loop through the sorted combined data and insert items
                     combinedData.forEach((data) => {
                         if (data.hasOwnProperty('CodeValue')) {  // If this is from the code data
 
@@ -524,11 +498,6 @@ sap.ui.define([
                         }
                     });
 
-                    // let oJsonModel = new sap.ui.model.json.JSONModel();
-                    // oJsonModel.loadData("/model/codecollection.json");
-                    // oJsonModel.setSizeLimit(160);
-                    // oType.setModel(oJsonModel);
-
                     let oJsonModel = new sap.ui.model.json.JSONModel(sap.ui.require.toUrl("articlesfreestyle/model/codecollection.json"));
                     oJsonModel.setSizeLimit(160);
                     oType.setModel(oJsonModel);
@@ -679,7 +648,6 @@ sap.ui.define([
                     oNewCodeButton.attachPress(function (oEvent) {
                         this.createNewContent(oEvent, newOrderIndex, ArticleGuID);
                     }, this);
-
                 }
 
                 //Get all outer VBox items

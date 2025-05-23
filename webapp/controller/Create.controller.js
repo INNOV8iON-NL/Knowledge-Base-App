@@ -140,27 +140,6 @@ sap.ui.define([
                 );
             },
 
-            //----------------- Function for main navbutton press  -------------------------
-            mainNavPress: function () {
-                let oRouter = this.getRouter();
-                let oView = this.getView();
-                oRouter.stop();
-
-                MessageBox.warning("Are you sure you want to go back? Unsent information will be lost.", {
-                    actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
-                    emphasizedAction: MessageBox.Action.CANCEL,
-                    onClose: function (sAction) {
-                        if (sAction == "OK") {
-                            oRouter.initialize();
-                            oView.byId("multiInputId").removeAllTokens();
-                            oRouter.navTo("RouteView1", false);
-                        } else {
-                            return;
-                        }
-                    }
-                })
-            },
-
             discardProgress: function () {
                 MessageBox.warning("Leaving the page now will discard any changes made to the article. Continue?", {
                     actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
@@ -556,8 +535,6 @@ sap.ui.define([
                     }.bind(this)
                 });
             },
-
-
         },
         );
     });
